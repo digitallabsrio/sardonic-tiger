@@ -1,0 +1,68 @@
+defmodule Cards do
+  @doc """
+    :type hand: List[int]
+    :type k: int
+    :rtype: bool
+  """
+  def is_hand_of_straights(hand, k) when rem(length(hand), k) != 0, do: false
+  def is_hand_of_straights(hand, k) do
+    count = hand |> Enum.frequencies
+    
+    hand = 
+      hand
+      |> Enum.sort
+      |> Arrays.new
+
+    i = 0
+    n = Arrays.size(hand)
+
+    array_traversal(hand, count, n, i, k)
+  end
+
+  defp array_traversal(hand, count, n, i, k) do
+    cond do
+      i < n ->
+        current = hand[i]
+        {res, count} = 
+          0..k-1
+          |> Enum.reduce_while({true, count}, fn(j, {res, count}) ->
+            cond do
+              !Map.has_key?(count, current + j) or count[current + j] == 0 -> {:halt, {false, count}}
+              true -> 
+                count = Map.put(count, current + j, count[current + j]-1)
+                {:cont, {res, count}}
+            end
+          end)
+   
+        cond do
+          res == false -> false
+          true ->
+            i = find_next_smallest_card(hand, count, i, n) 
+            array_traversal(hand, count, n, i, k)
+        end
+   
+      true -> true 
+    end
+  end
+
+  defp find_next_smallest_card(hand, count, i, n) do
+    cond do
+      i < n and count[hand[i]] == 0 -> find_next_smallest_card(hand, count, i+1, n)
+      true -> i
+    end
+  end
+end
+
+## Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+hand = [5,2,4,4,1,3,5,6,3]
+k = 3
+IO.inspect Cards.is_hand_of_straights(hand, k)
+
+# Example 2
+hand = [1,9,3,5,7,4,2,9,11]
+k = 2
+IO.inspect Cards.is_hand_of_straights(hand, k)

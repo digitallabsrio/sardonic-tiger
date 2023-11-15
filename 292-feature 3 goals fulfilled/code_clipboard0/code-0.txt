@@ -1,0 +1,49 @@
+defmodule Stocks do
+  def goals_fulfilled(trades) do
+    frequency_map = trades |> Enum.frequencies
+    imagined_map = %{}
+
+    trades
+    |> Enum.reduce_while({frequency_map, imagined_map, true}, fn(n, {frequency_map, imagined_map, res}) ->
+      imagined_map = if imagined_map[n] == nil, do: Map.put(imagined_map, n, 0) |> Map.put(n + 3, 0), else: imagined_map
+      frequency_map = if frequency_map[n + 2] == nil, do: Map.put(frequency_map, n + 2, 0), else: frequency_map
+
+      cond do
+        frequency_map[n] == 0 -> {:cont, {frequency_map, imagined_map, res}}
+        imagined_map[n] > 0 ->
+          # Adding number to existing sequence
+          imagined_map = 
+            imagined_map
+            |> Map.put(n, imagined_map[n] - 1)
+            |> Map.put(n + 1, imagined_map[n] + 1)
+
+          frequency_map = Map.put(frequency_map, n, frequency_map[n] - 1) 
+          {:cont, {frequency_map, imagined_map, res}}
+
+        frequency_map[n+1] > 0 and frequency_map[n+2] > 0 ->
+          # Creating new subsequence
+          frequency_map = 
+            frequency_map
+            |> Map.put(n + 1, frequency_map[n + 1] - 1)
+            |> Map.put(n + 2, frequency_map[n + 2] - 1)
+            |> Map.put(n, frequency_map[n] - 1) 
+
+          imagined_map = Map.put(imagined_map, n + 3, imagined_map[n + 3] + 1)
+          {:cont, {frequency_map, imagined_map, res}}
+
+        true -> {:halt, {frequency_map, imagined_map, false}}
+      end
+    end)
+    |> elem(2)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+trades = [1, 2, 3, 3, 4, 4, 5, 5]
+cond do
+  !Stocks.goals_fulfilled(trades) -> IO.puts "The goals have not been fulfilled!"
+  true -> IO.puts "The goals have been fulfilled!"
+end

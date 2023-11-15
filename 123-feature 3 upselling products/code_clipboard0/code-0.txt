@@ -1,0 +1,63 @@
+defmodule UpsellProducts do
+  defstruct product_dict: %{}, product_list: Arrays.new([])
+  def init, do: %__MODULE__{}
+
+  @doc """
+    Inserts a product to the database.
+  """
+  def insert_product(obj, prod) do
+    cond do
+      Map.has_key?(obj.product_dict, prod) -> {obj, false}
+      true ->
+        update_dict = Map.put(obj.product_dict, prod, Arrays.size(obj.product_list))
+        value = obj.product_list |> Arrays.append(prod)
+        obj = %__MODULE__{obj | product_dict: update_dict, product_list: value}
+        {obj, true}
+    end
+  end
+
+  @doc """
+    Removes a product from the database. 
+  """
+  def remove_product(obj, prod) do
+    cond do
+      Map.has_key?(obj.product_dict, prod) -> 
+        # move the last product to the place i of the product to delete
+        last_product = obj.product_list[-1]
+        i = obj.product_dict[prod]
+        arr = obj.product_list
+
+        list_update = Arrays.replace(arr, i, last_product)
+        dict_update = Map.put(obj.product_dict, last_product, i)
+        obj = %__MODULE__{obj | product_list: list_update, product_dict: dict_update}
+
+        # delete the last product
+        {:ok, {_, list}} = obj.product_list |> Arrays.extract
+        dict = Map.delete(obj.product_dict, prod)
+        obj = %__MODULE__{obj | product_list: list, product_dict: dict}        
+        {obj, true}
+
+      true -> {obj, false}
+    end
+  end
+
+  @doc """
+    Get a random product from the database in constant time.
+  """
+  def get_random_product(obj), do: Enum.random(obj.product_list)
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+dataset = UpsellProducts.init
+{dataset, _} = dataset |> UpsellProducts.insert_product(1212)
+{dataset, _} = dataset |> UpsellProducts.insert_product(190)
+{dataset, _} = dataset |> UpsellProducts.insert_product(655)
+{dataset, _} = dataset |> UpsellProducts.insert_product(327)
+IO.puts dataset |> UpsellProducts.get_random_product
+
+{dataset, _} = dataset |> UpsellProducts.remove_product(190) 
+{dataset, _} = dataset |> UpsellProducts.remove_product(655)
+IO.puts dataset |> UpsellProducts.get_random_product

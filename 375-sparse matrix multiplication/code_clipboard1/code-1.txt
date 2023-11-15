@@ -1,0 +1,71 @@
+defmodule Matrix do
+  def multiply(a, b) do
+    map_a = %{}
+    map_b = %{}
+    n = length(a)
+    p = length(hd(b)) 
+
+    c = 
+      List.duplicate(0, p)
+      |> Arrays.new
+      |> List.duplicate(n)
+      |> Arrays.new
+
+    map_a = 
+      a 
+      |> Enum.with_index
+      |> Enum.reduce(map_a, fn({row, r}, map_a) ->
+        row
+        |> Enum.with_index
+        |> Enum.reduce(map_a, fn({value, c}, map_a) ->
+          cond do
+            value != 0 -> Map.put(map_a, {r, c}, value)
+            true -> map_a
+          end
+        end)
+      end)
+
+    map_b = 
+      b 
+      |> Enum.with_index
+      |> Enum.reduce(map_b, fn({row, r}, map_b) ->
+        row
+        |> Enum.with_index
+        |> Enum.reduce(map_b, fn({value, c}, map_b) ->
+          cond do
+            value != 0 -> Map.put(map_b, {r, c}, value)
+            true -> map_b
+          end
+        end)
+      end)
+
+    map_a
+    |> Enum.reduce(c, fn({{key_a, key_b}, value}, c) ->
+      0..p-1
+      |> Enum.reduce(c, fn(j, c) ->
+        cond do
+          Map.has_key?(map_b, {key_b, j}) ->
+            val = map_b[{key_b, j}]
+            inner_arr = Arrays.replace(c[key_a], j, (c[key_a])[j] + value * val)
+            Arrays.replace(c, key_a, inner_arr)
+
+          true -> c
+        end
+      end)
+    end)
+  end
+end   
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+a = [[1, 0, 0], [0, 1, 3]]
+b = [[5, 0, 0], [0, 0, 0], [3, 0, 2]]
+IO.inspect Matrix.multiply(a, b) |> Helper.printer
+
+# Example 2
+d = [[1, -5]]
+e = [[12], [-1]]
+IO.inspect Matrix.multiply(d, e) |> Helper.printer

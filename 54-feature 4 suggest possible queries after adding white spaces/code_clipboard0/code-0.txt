@@ -1,0 +1,57 @@
+defmodule Queries do
+    @doc """
+        :type query: str
+        :type dict: List[str]
+        :rtype: List[str]
+    """
+    def break_query(query, dict) do
+        helper(query, MapSet.new(dict), %{}) 
+        |> elem(1)
+        |> Arrays.to_list
+    end
+
+    def helper(query, _dict, _result) when byte_size(query) == 0, do: []
+    def helper(query, dict, result) do
+        cond do
+            Map.has_key?(result, query) -> {result, result[query]}
+            true ->
+                res = 
+                    dict 
+                    |> Enum.reduce(Arrays.new([]), fn(word, res) ->
+                        cond do
+                            !String.starts_with?(query, word) -> res
+                            byte_size(word) == byte_size(query) -> Arrays.append(res, word)
+                            true -> 
+                                length_word = byte_size(query) - byte_size(word)
+                                sliced = String.slice(query, byte_size(word), length_word)
+                                {_, resultOfTheRest} = helper(sliced, dict, result)
+
+                                resultOfTheRest
+                                |> Enum.reduce(res, fn(item, res) ->
+                                    item = word <> " " <> item
+                                    Arrays.append(res, item)
+                                end)
+                        end
+                    end)
+
+                result = Map.put(result, query, res)
+                {result, res}
+        end
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+dict = ["an", "book", "car", "cat", "cook", "cookbook", "crash", 
+        "cream", "high", "highway", "i", "ice", "icecream", "low", 
+        "scream", "veg", "vegan", "way"]
+
+# Example 1
+query = "vegancookbook"
+IO.inspect Queries.break_query(query, dict)
+
+# Example 2
+query = "highwaycarcrash"
+IO.inspect Queries.break_query(query, dict)

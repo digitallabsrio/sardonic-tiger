@@ -1,0 +1,6 @@
+defmodule Solution do
+  def num_of_minutes(_n, _head_id, _manager, _inform_time) do
+    #write your code here
+    -1
+  end
+end

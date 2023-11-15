@@ -1,0 +1,40 @@
+defmodule Solution do
+  def generate_permutations(movies) do
+    res = []
+    backtrack(movies, res, 0, Arrays.size(movies))
+  end
+
+  def backtrack(movies, res, first, size) when first == size, do: [movies | res]
+  def backtrack(movies, res, first, size) do
+    first..size-1 
+    |> Enum.reduce({res, movies}, fn(i, {res, movies}) ->
+      temp = movies[i]
+      new_movies = 
+        movies
+        |> Arrays.replace(i, movies[first])
+        |> Arrays.replace(first, temp)
+      res = backtrack(new_movies, res, first+1, size)
+      {res, movies}
+    end)
+    |> elem(0)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+# Example #1
+input = Arrays.new(["Frozen","Dune","Coco"])
+IO.write("Output1: ")
+IO.inspect Solution.generate_permutations(input) |> Helper.printer
+
+# Example #2
+input = Arrays.new(["Frozen","Dune","Coco","Melificient"])
+IO.write("Output2: ")
+IO.inspect Solution.generate_permutations(input) |> Helper.printer
+
+# Example #3
+input = Arrays.new(["Dune","Coco"])
+IO.write("Output3: ")
+IO.inspect Solution.generate_permutations(input) |> Helper.printer

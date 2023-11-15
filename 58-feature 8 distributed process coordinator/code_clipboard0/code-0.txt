@@ -1,0 +1,83 @@
+defmodule Snapshot do
+  defstruct snapshot_id: 0, node_state: %{}, n_count: 0
+
+  def init(length) do
+    obj = %__MODULE__{n_count: length}
+
+    0..length-1 
+    |> Enum.reduce(obj, fn(i, obj) ->
+      inner_map = Map.get(obj.node_state, 0, %{}) |> Map.put(i, 0)
+      %__MODULE__{obj | node_state: Map.put(obj.node_state, 0, inner_map)}
+    end)
+  end
+
+  def set_state(obj, idx, _val) when idx >= obj.n_count, do: obj
+  def set_state(obj, idx, val) do
+    inner_map = Map.put(obj.node_state[obj.snapshot_id], idx, val)
+    %__MODULE__{obj | node_state: Map.put(obj.node_state, obj.snapshot_id, inner_map)} 
+  end
+
+  def snap(obj) do
+    obj = %__MODULE__{obj | snapshot_id: obj.snapshot_id + 1}
+    get_inner_map = obj.node_state[obj.snapshot_id-1]
+    obj = %__MODULE__{obj | node_state: Map.put(obj.node_state, obj.snapshot_id, get_inner_map)}
+    {obj, obj.snapshot_id-1}
+  end
+
+  def fetch_state(obj, idx, snapshot_id) do
+    cond do
+      snapshot_id < obj.snapshot_id and snapshot_id >= 0 and idx < obj.n_count ->
+        if Map.has_key?(obj.node_state[snapshot_id], idx), do: obj.node_state[snapshot_id][idx], else: 0 
+      true -> nil
+    end
+  end
+end
+
+defmodule Main do
+  def main do
+    # Driver Code
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:\n"
+
+    # Example 1
+    IO.puts("-----Example 1:-----")
+    IO.puts("")
+    snapshotArr = Snapshot.init(3)   
+    IO.puts("Initializing the data structure with three nodes")
+    snapshotArr = snapshotArr |> Snapshot.set_state(0, 5)  
+    IO.puts("Setting the state of node 0 to 5")
+    {snapshotArr, snapshotID} = Snapshot.snap(snapshotArr)
+    IO.puts("Snap id: #{snapshotID}")
+    snapshotArr = snapshotArr |> Snapshot.set_state(0, 1)
+    IO.puts("Setting the state of node 0 to 1")
+    snapshotArr = snapshotArr |> Snapshot.set_state(2, 3)
+    IO.puts("Setting the state of node 2 to 3")
+    snapshotArr = snapshotArr |> Snapshot.set_state(1, 10)
+    IO.puts("Setting the state of node 1 to 10")
+    IO.puts("Node state at index 0 with Snap id 0 is: #{snapshotArr |> Snapshot.fetch_state(0, 0)}")
+    {snapshotArr, snapshotID} = Snapshot.snap(snapshotArr)
+    IO.puts("Snap id: #{snapshotID}")
+    IO.puts("Node state at index 0 with Snap id 1 is: #{snapshotArr |> Snapshot.fetch_state(0, 1)}")
+    IO.puts("Node state at index 1 with Snap id 1 is: #{snapshotArr |> Snapshot.fetch_state(1, 1)}")
+    IO.puts("")
+
+    # Example 2
+    IO.puts("-----Example 2:-----")
+    IO.puts("")
+    snapshotArr = Snapshot.init(5)   
+    IO.puts("Initializing the data structure with five nodes")
+    snapshotArr = snapshotArr |> Snapshot.set_state(4, 1)  
+    IO.puts("Setting the state of node 4 to 1")
+    {snapshotArr, snapshotID} = Snapshot.snap(snapshotArr)
+    IO.puts("Snap id: #{snapshotID}")
+    snapshotArr = snapshotArr |> Snapshot.set_state(2, 21)
+    IO.puts("Setting the state of node 2 to 21")
+    {snapshotArr, snapshotID} = Snapshot.snap(snapshotArr)
+    IO.puts("Snap id: #{snapshotID}")
+    IO.puts("Node state at index 4 with Snap id 1 is: #{snapshotArr |> Snapshot.fetch_state(4, 1)}")
+    IO.puts("Node state at index 2 with Snap id 1 is: #{snapshotArr |> Snapshot.fetch_state(2, 1)}")
+    IO.puts("Node state at index 3 with Snap id 1 is: #{snapshotArr |> Snapshot.fetch_state(3, 1)}")
+  end
+end
+
+Main.main

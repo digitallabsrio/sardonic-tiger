@@ -1,0 +1,94 @@
+defmodule Solution do
+  def show_steps(process) do
+    IO.puts "Here are the steps: "
+    IO.puts "#{process[0]}"
+    IO.puts "#{process[1]}"
+    IO.puts "#{process[2]}"
+  end
+
+  def decode_message(nums, target) do
+    nums = 
+      nums 
+      |> Enum.map(fn x -> x * 1.0 end) 
+      |> Arrays.new
+    if Arrays.size(nums) == 0, do: false, else: dfs(nums, target, Arrays.new([]))
+  end
+
+  def dfs(nums, target, process) do
+    size = Arrays.size(nums)
+    cond do
+      size == 1 -> {abs(nums[0] - target) <= 0.001, process}
+      true -> 
+        0..size-1 
+        |> Enum.reduce_while({false, process}, fn(i, {flag, process}) ->
+          {flag, process} = update_flag_process(nums, target, process, flag, i, size)
+          if flag == true, do: {:halt, {true, process}}, else: {:cont, {flag, process}}
+        end)
+    end
+  end
+
+  def update_flag_process(nums, target, process, flag, i, size) do
+    0..size-1 
+    |> Enum.reduce_while({flag, process}, fn(j, {flag, process}) ->
+      cond do
+        i != j ->
+          next_nums = Enum.reduce(0..Arrays.size(nums)-1, Arrays.new([]), fn(k, next_nums) ->
+            if k == j or k == i, do: next_nums, else: next_nums |> Arrays.append(nums[k])
+          end)
+
+          process = Arrays.append(process, "#{nums[i]}+#{nums[j]} = #{nums[i] + nums[j]}")
+          {flag, process} = dfs(Arrays.append(next_nums, nums[i] + nums[j]), target, process)
+
+          cond do
+            flag == true -> {:halt, {flag, process}}
+            true ->
+              {:ok, {_, process}} = process |> Arrays.extract
+              process = Arrays.append(process, "#{nums[i]}*#{nums[j]} = #{nums[i] * nums[j]}")
+              {flag, process} = dfs(Arrays.append(next_nums, nums[i] * nums[j]), target, process)
+
+              cond do
+                flag == true -> {:halt, {flag, process}}
+                true ->
+                  {:ok, {_, process}} = process |> Arrays.extract
+                  process = Arrays.append(process, "#{nums[i]}-#{nums[j]} = #{nums[i] - nums[j]}")
+                  {flag, process} = dfs(Arrays.append(next_nums, nums[i] - nums[j]), target, process)
+
+                  cond do
+                    flag == true -> {:halt, {flag, process}}
+                    true ->
+                      {:ok, {_, process}} = process |> Arrays.extract
+                      {flag, process} = 
+                        cond do
+                          nums[j] != 0 ->
+                            process = Arrays.append(process, "#{nums[i]}/#{nums[j]} = #{nums[i] / nums[j]}")
+                            dfs(Arrays.append(next_nums, nums[i] / nums[j]), target, process)
+
+                          true -> 
+                            process = Arrays.append(process, "#{nums[i]}/#{nums[j]} = 2147483647")
+                            dfs(Arrays.append(next_nums, 2147483647), target, process)
+                        end
+
+                      cond do
+                        flag == true -> {:halt, {flag, process}}
+                        true ->
+                          {:ok, {_, process}} = process |> Arrays.extract
+                          {:cont, {flag, process}}
+                      end
+                  end
+              end
+          end
+        true -> {:cont, {flag, process}}
+      end
+    end)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+message = Arrays.new([1, 5, 5, 8])
+mdigest = 30
+{result, process} = Solution.decode_message(message, mdigest)
+IO.inspect result
+if Arrays.size(process) > 0, do: Solution.show_steps(process), else: IO.write("")

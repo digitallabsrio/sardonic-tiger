@@ -1,0 +1,131 @@
+defmodule Solution do
+  def find_global_profile(tweets) do
+    # Finding the lenght of the tweets list
+    tweets_len = Arrays.size(tweets)
+    cond do
+      # If the tweets list is empty, return an empty list.
+      tweets_len == 0 -> []
+      true ->
+        cond do
+          # If there is only tweet in the list, return the required coordinates 
+          tweets_len == 1 ->
+            tweet_zero = Arrays.new(tweets[0])
+            Arrays.new([[tweet_zero[0], tweet_zero[2]], [tweet_zero[1], 0]])
+
+          true ->
+            #If there is more than one tweet, keep dividing the tweets recurssively into two parts.
+            start_tweets = find_global_profile(Arrays.slice(tweets, 0..div(tweets_len, 2)-1))
+            end_tweets = find_global_profile(Arrays.slice(tweets, div(tweets_len, 2)..tweets_len-1))
+
+            # Merge the divided tweets together.
+            merge_global_profiles(start_tweets, end_tweets) 
+        end
+    end
+  end
+
+  def update_global_profile(x_coordinate, y_coordinate, global_profile) do
+    # Updating and returning our global profile 
+    cond do
+      # add a new point if our global profile has not changed vertically.
+      Arrays.size(global_profile) == 0 or Arrays.new(global_profile[-1])[0] != x_coordinate ->
+        Arrays.append(global_profile, [x_coordinate, y_coordinate])
+
+      # update the last point if our global profile has changed vertically
+      true -> 
+        inner_arr = Arrays.new(global_profile[-1])
+        Arrays.replace(global_profile, -1, Arrays.replace(inner_arr, 1, y_coordinate))
+    end
+  end
+
+  def append_global_profile(curr_index, tweets_list, tweets_list_len, c_mentions, global_profile) do 
+    cond do
+      # From our current index, append the rest of the elements to our final global profile.
+      curr_index < tweets_list_len ->
+        curr = Arrays.new(tweets_list[curr_index])
+        x_coordinate = curr[0]
+        y_coordinate = curr[1]
+        curr_index = curr_index + 1
+        
+        {global_profile, c_mentions} = 
+          cond do
+            c_mentions != y_coordinate -> 
+              global_profile = update_global_profile(x_coordinate, y_coordinate, global_profile)
+              c_mentions = y_coordinate
+              {global_profile, c_mentions}
+
+            true -> {global_profile, c_mentions}
+          end
+
+        append_global_profile(curr_index, tweets_list, tweets_list_len, c_mentions, global_profile)
+
+      true -> global_profile
+    end
+  end
+
+  def merge_global_profiles(start_tweets, end_tweets, global_profile, c_mentions, start_y, end_y, len_start, len_end, i_start, i_end) do
+    cond do
+      i_start < len_start and i_end < len_end ->
+        start_point = Arrays.new(start_tweets[i_start])
+        end_point = Arrays.new(end_tweets[i_end])
+
+        # pick up the smallest x
+        {x_coordinate, start_y, end_y, i_start, i_end} = 
+          cond do 
+            start_point[0] < end_point[0] ->
+              x_coordinate = start_point[0]
+              start_y = start_point[1]
+              {x_coordinate, start_y, end_y, i_start+1, i_end}
+
+            true -> 
+              x_coordinate = end_point[0]
+              end_y = end_point[1]
+              {x_coordinate, start_y, end_y, i_start, i_end+1}
+          end
+
+        # max height (i.e. y) between both global_profiles
+        max_peak_mentions = max(start_y, end_y)
+
+        # if there is a global_profile change
+        {global_profile, c_mentions} = 
+          cond do
+            c_mentions != max_peak_mentions ->
+              global_profile = update_global_profile(x_coordinate, max_peak_mentions, global_profile)
+              c_mentions = max_peak_mentions
+              {global_profile, c_mentions}
+
+            true -> {global_profile, c_mentions}
+          end
+          
+        merge_global_profiles(start_tweets, end_tweets, global_profile, c_mentions, start_y, end_y, len_start, len_end, i_start, i_end)
+
+      true -> {global_profile, c_mentions, i_start, i_end}
+    end
+  end
+
+  def merge_global_profiles(start_tweets, end_tweets) do
+    # Storing the lengths of both global profiles i.e., starting tweets and ending tweets.
+    len_start = Arrays.size(start_tweets)
+    len_end = Arrays.size(end_tweets)
+
+    # initializing the variables.
+    i_start = i_end = 0
+    c_mentions  = start_y = end_y = 0
+    global_profile = Arrays.new([])
+
+    # while we're in the region where both global_profiles are present
+    {global_profile, c_mentions, i_start, i_end} = merge_global_profiles(start_tweets, end_tweets, global_profile, c_mentions, start_y, end_y, len_start, len_end, i_start, i_end)
+
+    # there is only start_tweets global_profile
+    global_profile = append_global_profile(i_start, start_tweets, len_start, c_mentions, global_profile)
+
+    # there is only end_tweets global_profile
+    append_global_profile(i_end, end_tweets, len_end, c_mentions, global_profile)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+tweets = Arrays.new([[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]])
+IO.inspect(Solution.find_global_profile(tweets) |> Arrays.to_list, charlists: :as_lists)

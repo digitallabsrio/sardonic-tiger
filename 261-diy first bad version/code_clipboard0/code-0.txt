@@ -1,0 +1,6 @@
+defmodule Solution do
+  def first_bad_version(_n, _v) do
+    # write your code here
+    -1
+  end
+end

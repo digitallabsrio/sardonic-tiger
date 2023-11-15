@@ -1,0 +1,36 @@
+defmodule Solution do
+  def intersection(productsIds1 , productsIds2) do
+    counter = List.duplicate(0, 1001) |> Arrays.new
+
+    counter = 
+      productsIds1 
+      |> Enum.reduce(counter, fn(id, counter) ->
+        if counter[id] == 0, do: Arrays.replace(counter, id, 1), else: counter 
+      end)
+
+    counter = 
+      productsIds2 
+      |> Enum.reduce(counter, fn(id, counter) ->
+        if counter[id] == 1, do: Arrays.replace(counter, id, 2), else: counter 
+      end)
+
+    similar_purchases = Arrays.new([])
+
+    counter 
+    |> Enum.with_index 
+    |> Enum.reduce(similar_purchases, fn({count, id}, similar_purchases) ->
+      if count > 1, do: Arrays.append(similar_purchases, id), else: similar_purchases
+    end) 
+    |> Arrays.to_list
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+productsIds1 = [10,100,200,300,505,606,20,100,1,5]
+productsIds2 = [200,100,300,600,100,10,1,1,505,505,606,606]
+
+similar_purchases = Solution.intersection(productsIds1,productsIds2);
+IO.inspect similar_purchases

@@ -1,0 +1,48 @@
+defmodule SettlingPeriod do
+  def least_time(stocks , s_time) do
+    # frequencies of the stocks
+    frequencies = 
+      List.duplicate(0, 26)
+      |> Arrays.new
+
+    frequencies = 
+      stocks
+      |> update_frequency(frequencies) 
+      |> Enum.sort
+      |> Arrays.new
+
+    # max frequency
+    {:ok, {f_max, frequencies}} = frequencies |> Arrays.extract
+    idle_intervals = (f_max - 1) * s_time
+
+    idle_intervals = update_intervals(frequencies, idle_intervals, f_max)
+    if idle_intervals > 0, do: idle_intervals + length(stocks), else: length(stocks)
+  end
+
+  def update_frequency(stocks, frequencies) do
+    stocks
+    |> Enum.reduce(frequencies, fn(<<s::utf8>>, frequencies) ->
+      index = s - ?A
+      Arrays.replace(frequencies, index, frequencies[index]+1)
+    end)
+  end
+
+  def update_intervals(frequencies, idle_intervals, f_max) do
+    cond do
+      Arrays.size(frequencies) > 0 and idle_intervals > 0 ->
+        {:ok, {f_max_pop, frequencies}} = frequencies |> Arrays.extract
+        idle_intervals = idle_intervals - min(f_max - 1, f_max_pop)
+
+        update_intervals(frequencies, idle_intervals, f_max)
+      true -> idle_intervals
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+transaction = ["A", "A", "A", "T", "T", "M", "A"]
+k = 2
+IO.puts "Time requires to trade all stocks: #{SettlingPeriod.least_time(transaction, k)} intervals"

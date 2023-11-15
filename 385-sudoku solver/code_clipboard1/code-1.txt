@@ -1,0 +1,118 @@
+defmodule Solution do
+  @digits ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+  def solve_sudoku(board) do
+    solve(board, 0, 0) |> elem(1)
+  end
+
+  # Replace board value with digit
+  def solve(board, r, c, d), do: Arrays.replace(board, r, Arrays.replace(board[r], c, d))
+
+  # Move right until you get to end, then restart at next row
+  def solve(board, r, c) when c == 9, do: solve(board, r + 1, 0)
+  # Checking if we reached end of matrix
+  def solve(board, r, _c) when r == 9, do: {true, board}
+  def solve(board, r, c) do
+    cond do
+      # If no empty space exists on current col, move to next col
+      Arrays.get(board[r], c) != "." -> solve(board, r, c + 1)
+      true ->
+        # Reduce over values
+        @digits 
+        |> Enum.reduce_while({false, board}, fn(d, {res, board}) ->
+          cond do
+            # Check if the piece can be played on the current spot
+            can_play(board, r, c, d) ->
+              # If yes, update the board
+              board = solve(board, r, c, d)
+
+              # And move to the next col of current row
+              {res, board} = solve(board, r, c + 1)
+
+              cond do
+                # Check if the flag is true, then mark it true 
+                res -> {:halt, {true, board}}
+                # Backtracking
+                true -> {:cont, {res, solve(board, r, c, ".")}}
+              end
+
+            true -> {:cont, {res, board}}
+          end
+        end)
+    end
+  end
+
+  def is_valid(board, r, c, x) do
+    0..8 
+    |> Enum.reduce_while(true, fn(i, flag) ->
+      cond do
+        (board[r])[i] == x -> {:halt, false} # Check row
+        (board[i])[c] == x -> {:halt, false} # Check column
+        true -> {:cont, flag}
+      end
+    end)
+  end
+
+  def check_sub_matrix(board, res, r, c, x, i) do
+    0..2 
+    |> Enum.reduce_while(res, fn(j, res) ->
+      if (board[r + i])[c + j] == x, do: {:halt, false}, else: {:cont, res}
+    end)
+  end
+
+  def check_sub_matrix(board, r, c, x) do
+    0..2 
+    |> Enum.reduce_while(true, fn(i, res) ->
+      inner_res = check_sub_matrix(board, res, r, c, x, i)
+      if inner_res == false, do: {:halt, false}, else: {:cont, res}
+    end)
+  end
+
+  def can_play(board, r, c, x) do
+    # Check sub-matrix
+    r_sub = r - rem(r, 3)
+    c_sub = c - rem(c, 3)
+    is_valid(board, r, c, x) and check_sub_matrix(board, r_sub, c_sub, x) and true
+  end
+end
+    
+# Driver code   
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+board = Arrays.new([
+  Arrays.new([".",".",".",".",".",".",".","7","."]),
+  Arrays.new( ["2","7","5",".",".",".","3","1","4"]),
+  Arrays.new([".",".",".",".","2","7",".","5","."]),
+  Arrays.new(["9","8",".",".",".",".",".","3","1"]),
+  Arrays.new([".","3","1","8",".","4",".",".","."]),
+  Arrays.new([".",".",".","1",".",".","8",".","5"]),
+  Arrays.new(["7",".","6","2",".",".","1","8","."]),
+  Arrays.new([".","9",".","7",".",".",".",".","."]),
+  Arrays.new(["4","1",".",".",".","5",".",".","7"])
+])
+    
+solved_board = Solution.solve_sudoku(board) 
+IO.write("     ")
+IO.write("Unsolved Board")
+IO.write("                        ")
+IO.write("Solution")
+IO.puts("")
+
+0..8 |> Enum.map(fn x ->
+  0..8 |> Enum.map(fn y ->
+    if rem(y, 3) == 0, do: IO.write("  "), else: IO.write("")
+    IO.write((board[x])[y])
+    IO.write(" ")
+  end)
+
+  IO.write("            ")
+    0..8 |> Enum.map(fn y ->
+      if rem(y, 3) == 0, do: IO.write("  "), else: IO.write("")
+      IO.write((solved_board[x])[y])
+      IO.write(" ")
+    end)
+
+    if rem(x, 3) == 2, do: IO.puts(""), else: IO.write("")
+    IO.puts("")
+end)

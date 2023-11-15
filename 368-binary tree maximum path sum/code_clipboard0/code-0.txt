@@ -1,0 +1,5 @@
+defmodule Solution do
+  def max_path_sum(_root) do
+    # write your code here
+  end
+end

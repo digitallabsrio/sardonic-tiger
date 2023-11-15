@@ -1,0 +1,44 @@
+defmodule Cost do
+  #This method calculates the amount of water trapped. The only argument
+  #passed is the elevation map, in form of a list.
+  def path_cost(elevation_map) do
+    #keeps track of the total water as we traverse the elevation map
+    water = 0
+    n = Arrays.size(elevation_map) #number of points on the map
+    
+    #lists to store the left_max and right_max of each point in the map
+    left_max = Arrays.new(List.duplicate(0, n)) 
+    right_max = Arrays.new(List.duplicate(0, n))
+
+    #default values
+    left_max = Arrays.replace(left_max, 0, elevation_map[0]) 
+    right_max = Arrays.replace(right_max, -1, elevation_map[-1])  
+
+    #filling the left_max list
+    left_max = 
+      1..n-1
+      |> Enum.reduce(left_max, fn(i, left_max) ->
+        Arrays.replace(left_max, i, max(left_max[i-1], elevation_map[i]))
+      end)
+
+    # filling the right_max list
+    right_max = 
+      n-2..0
+      |> Enum.reduce(right_max, fn(i, right_max) ->
+        Arrays.replace(right_max, i, max(right_max[i+1], elevation_map[i]))
+      end)
+
+    #calculating the amount of water
+    0..n-1
+    |> Enum.reduce(water, fn(i, water) ->
+      water + min(left_max[i], right_max[i]) - elevation_map[i]
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+elevation_map = Arrays.new([1, 2, 1, 3, 1, 2, 1, 4, 1, 0, 0, 2, 1, 4])
+IO.puts "Accumulated water: #{Cost.path_cost(elevation_map)} cm"

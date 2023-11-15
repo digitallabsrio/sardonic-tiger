@@ -1,0 +1,39 @@
+defmodule StoryID do
+  def find_story_id(arr, key) do
+    start = 0
+    end_var = Arrays.size(arr)-1 
+    find_story_id(arr, key, start, end_var)
+  end
+
+  def find_story_id(_arr, _key, start, end_var) when start > end_var, do: -1
+  def find_story_id(arr, key, start, end_var) do
+    mid = div(start + end_var, 2)
+    sitem = arr[start]
+    item = arr[mid]
+    eitem = arr[end_var]
+    cond do
+      key == item -> mid
+      (sitem <= item and key <= item and key >= sitem) -> 
+        find_story_id(arr, key, start, mid-1)
+      (item <= eitem and key >= item and key <= eitem) -> 
+        find_story_id(arr, key, mid+1, end_var)
+      (sitem <= item and item <= eitem and key > eitem) -> 
+        find_story_id(arr, key, mid+1, end_var)
+      eitem <= item -> find_story_id(arr, key, mid+1, end_var)
+      sitem >= item -> find_story_id(arr, key, start, mid-1)
+      true -> -1
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+v1 = Arrays.new([6, 7, 1, 2, 3, 4, 5])
+IO.puts "Story(3) found at index: #{StoryID.find_story_id(v1, 3)}"
+IO.puts "Story(6) found at index: #{StoryID.find_story_id(v1, 6)}"
+
+v2 = Arrays.new([5,6,7,8,9,10,11,12,1,2,3,4])
+IO.puts "Story(3) found at index: #{StoryID.find_story_id(v2, 3)}"
+IO.puts "Story(6) found at index: #{StoryID.find_story_id(v2, 6)}"

@@ -1,0 +1,36 @@
+defmodule Solution do
+  def max_signal_strength(stores, k) do
+    left = right = 0
+    n = Arrays.size(stores)
+
+    {_, left, right} = 
+      0..n-1
+      |> Enum.reduce({k, left, right}, fn(_, {k, left, right}) ->
+        # If we included a zero in the window we reduce the value of k.
+        # Since k is the maximum zeros allowed in a window.
+        k = if stores[right] == 0, do: k - 1, else: k
+
+        # A negative k denotes we have consumed all the available repeaters and window has
+        # more than allowed zeros, thus increment left pointer by 1 to keep the window size same.
+        cond do
+          k < 0 -> {k + 1 - stores[left], left+1, right+1}
+          true -> {k, left, right+1}
+        end
+      end)
+
+    right - left
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+stores = Arrays.new([1, 0, 0, 1, 1, 1, 0, 1, 0, 1])
+
+# Example 1
+k = 1
+IO.puts "Maximum Contiguous Stores: #{Solution.max_signal_strength(stores, k)}"
+
+# Example 2
+k = 3
+IO.puts "Maximum Contiguous Stores: #{Solution.max_signal_strength(stores, k)}"

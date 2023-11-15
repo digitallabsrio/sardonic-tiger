@@ -1,0 +1,5 @@
+defmodule Solution do
+  def length_of_longest_substring_k_distinct(_s, _k) do
+    # write your code here
+  end
+end

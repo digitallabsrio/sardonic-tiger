@@ -1,0 +1,6 @@
+defmodule Solution do
+  def divide(_dividend, _divisor) do
+    # Write your code here  
+    -1
+  end   
+end

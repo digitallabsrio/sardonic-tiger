@@ -1,0 +1,94 @@
+defmodule TreeNode do
+    defstruct val: nil, children: Arrays.new([])
+    def init(val), do: %TreeNode{val: val}
+end
+
+defmodule TTL do
+    defp map_creater(neighbors, key, value), do: neighbors |> Map.update(key, [value], &([value | &1]))
+
+    # DFS to build adjacency list
+    def dfs(_parent, child, neighbors) when child == nil, do: neighbors
+    def dfs(parent, child, neighbors) do
+        neighbors = 
+            cond do
+                parent ->
+                    neighbors = map_creater(neighbors, parent.val, child.val)
+                    map_creater(neighbors, child.val, parent.val)
+                true -> neighbors
+            end
+
+        0..Arrays.size(child.children)-1
+        |> Enum.reduce(neighbors, fn (i, neighbors) -> dfs(child, child.children[i], neighbors) end)
+    end
+
+    def update_bfs(bfs, lookup, neighbors) do
+        bfs 
+        |> Enum.reduce([], fn (node, temp) ->
+            neighbors[node] 
+            |> Enum.reduce(temp, fn(nei, temp) ->
+                if !MapSet.member?(lookup, nei), do: [nei | temp], else: temp
+            end)
+        end)
+    end
+
+    def update_lookup(bfs, lookup) do
+        bfs 
+        |> Enum.reduce(lookup, fn(item, lookup) -> MapSet.put(lookup, item) end)
+    end
+
+    def get_devices(root, server, ttl) do
+        neighbors = %{} # Adjacency list
+        neighbors = dfs(nil, root, neighbors)
+
+        # BFS to find nodes
+        bfs = [server.val]
+        lookup = MapSet.new(bfs)
+        0..ttl-1
+        |> Enum.reduce({bfs, lookup}, fn(_, {bfs, lookup}) ->
+            bfs = update_bfs(bfs, lookup, neighbors)
+            lookup = update_lookup(bfs, lookup)
+            {bfs, lookup}
+        end)
+        |> elem(0)
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+root = TreeNode.init(1)
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(2)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(3)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(4)))
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(5))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[0].children |> Arrays.append(TreeNode.init(10))
+root = put_in(root.children[0].children[0].children, i_value)
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(6))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(11))
+root = put_in(root.children[0].children[1].children, i_value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(12))
+root = put_in(root.children[0].children[1].children, i_value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(13))
+root = put_in(root.children[0].children[1].children, i_value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(7))
+root = put_in(root.children[2].children, value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(8))
+root = put_in(root.children[2].children, value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(9))
+root = put_in(root.children[2].children, value)
+
+server = root.children[0].children[1]
+ttl = 2
+IO.puts "The TTL value will expire on node IDs: #{inspect TTL.get_devices(root, server, ttl)}"

@@ -1,0 +1,93 @@
+defmodule Network do
+  alias Okasaki.Deque, as: Deque
+
+  def update_configuration(grid) do
+    queue = Deque.new()
+
+    # Step 1). build the initial set of updated routers
+    rows = Arrays.size(grid)
+    cols = Arrays.size(grid[0])
+
+    queue = 
+      0..rows-1
+      |> Enum.reduce(queue, fn(r, queue) ->
+        0..cols-1
+        |> Enum.reduce(queue, fn(c, queue) ->
+          if (grid[r])[c] == 2, do: queue |> Deque.insert_right({r, c}), else: queue
+        end)
+      end)
+
+    # queue = queue_outer_loop(grid, queue, rows, cols, 0) 
+
+    # Mark the round / level, _i.e_ the ticker of timestamp
+    queue = queue |> Deque.insert_right({-1, -1})
+
+    # Step 2). start the transmitting process via BFS
+    minutes_elapsed = -1
+    # Four Neigbors, up, right, down and left
+    directions = [{-1, 0}, {0, 1}, {1, 0}, {0, -1}]
+
+    bfs(grid, queue, minutes_elapsed, directions, rows, cols)
+  end
+
+  def bfs(grid, queue, minutes_elapsed, directions, rows, cols) do
+    cond do
+      Deque.size(queue) <= 0 -> minutes_elapsed # return elapsed minutes
+      true ->
+        {:ok, {{row, col}, queue}} = Deque.remove_left(queue)
+        cond do
+          row == -1 ->
+              # We finish one round of processing
+              minutes_elapsed = minutes_elapsed + 1
+              # to avoid the endless loop
+              queue = if Deque.size(queue) > 0, do: Deque.insert_right(queue, {-1, -1}), else: queue
+              bfs(grid, queue, minutes_elapsed, directions, rows, cols)
+          
+          true ->
+            # this is an updated router
+            # then it would transmit the update to its neighbors
+            {grid, queue} =
+              directions
+              |> Enum.reduce({grid, queue}, fn(d, {grid, queue}) ->
+                neighbor_row = row + elem(d, 0)
+                neighbor_col = col + elem(d, 1)
+                update_grid_queue(grid, queue, neighbor_row, neighbor_col, rows, cols)
+              end)
+
+            bfs(grid, queue, minutes_elapsed, directions, rows, cols)
+        end
+    end
+  end
+
+  def update_grid_queue(grid, queue, neighbor_row, neighbor_col, rows, cols) do
+    cond do
+      neighbor_row >= 0 and neighbor_row < rows and neighbor_col >= 0 and neighbor_col < cols ->
+        cond do
+          (grid[neighbor_row])[neighbor_col] == 1 ->
+            # this router would be updated
+            inner_array = Arrays.replace(grid[neighbor_row], neighbor_col, 2)
+            grid = Arrays.replace(grid, neighbor_row, inner_array)
+
+            # this router would then transmit to other routers
+            queue = queue |> Deque.insert_right({neighbor_row, neighbor_col})
+
+            {grid, queue}
+          true -> {grid, queue}
+        end
+      true -> {grid, queue}
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+grid = Arrays.new([
+  Arrays.new([1, 1, 0, 0, 1]), 
+  Arrays.new([0, 1, 0, 1, 1]), 
+  Arrays.new([1, 1, 2, 0, 1]), 
+  Arrays.new([1, 0, 1, 1, 1]), 
+  Arrays.new([1, 1, 0, 1, 1])
+])
+IO.inspect Network.update_configuration(grid)

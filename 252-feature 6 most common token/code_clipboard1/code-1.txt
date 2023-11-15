@@ -1,0 +1,40 @@
+defmodule Compiler do
+  def isalnum?(c), do: String.match?(c, ~r/^[[:alnum:]]+$/)
+
+  def most_common_token(code, keywords) do
+    # Replacing the syntax with spaces
+    tokens = 
+      code 
+      |> String.graphemes
+      |> Enum.map(fn c -> if isalnum?(c), do: String.downcase(c), else: " " end) 
+      |> Enum.join("")
+      |> String.split(" ", trim: true)
+
+    count = %{}
+    banned_words = MapSet.new(keywords)
+
+    # Count occurrence of each token, excluding the keywords
+    tokens
+    |> Enum.reduce(count, fn(token, count) ->
+      cond do
+        !MapSet.member?(banned_words, token) -> Map.put(count, token, Map.get(count, token, 0) + 1)
+        true -> count
+      end 
+    end)
+    |> Enum.max_by(&elem(&1, 1))
+    |> elem(0)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+code = "int main() {
+  int value = getValue();  
+  int sum = value + getRandom();
+  int subs = value - getRandom();
+  return 0;
+}"
+keywords = ["int", "main", "return"]
+IO.inspect Compiler.most_common_token(code, keywords)

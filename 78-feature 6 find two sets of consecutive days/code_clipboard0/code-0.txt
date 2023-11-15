@@ -1,0 +1,43 @@
+defmodule Meetings do
+    def two_sets_of_days(hours_per_day, k) do
+        map = Map.new |> Map.put(0, -1)
+        sum = 0
+        {lsize, result} = {'inf', 'inf'}
+
+        map = 
+            hours_per_day 
+            |> Enum.with_index 
+            |> Enum.reduce({map, sum}, fn({day, i}, {map, sum}) -> {Map.put(map, sum + day, i), sum + day} end)
+            |> elem(0)
+
+        result = 
+            hours_per_day 
+            |> Enum.with_index 
+            |> Enum.reduce({result, lsize, sum}, fn({day, i}, {result, lsize, sum}) ->
+                sum = sum + day
+
+                # stores minimum length of sub-array ending with index<= i with sum k. This ensures non-overlapping property.
+                lsize = if Map.has_key?(map, sum - k), do: min(lsize, i - map[sum - k]), else: lsize
+
+                result = 
+                    if Map.has_key?(map, sum + k) and lsize < 'inf' do 
+                        min(result, map[sum + k] - i + lsize)
+                    else 
+                        result
+                    end
+
+                {result, lsize, sum}
+            end)
+            |> elem(0)
+
+        if result == 'inf', do: -1, else: result
+    end
+end
+
+#  Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+hours_per_day = [1, 2, 2, 3, 2, 6, 7, 2, 1, 4, 8]
+k = 5
+IO.inspect Meetings.two_sets_of_days(hours_per_day, k)

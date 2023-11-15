@@ -1,0 +1,5 @@
+defmodule Solution do
+  def is_bipartite(_graph) do
+    # write your code here
+  end
+end

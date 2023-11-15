@@ -1,0 +1,62 @@
+defmodule Solution do
+  def check_y(_y, res, _k_j, _k_i, y_size) when y_size == 0 or y_size == 1, do: res
+  def check_y(y, res, k_j, k_i, y_size) do
+    1..y_size-1 
+    |> Enum.reduce(res, fn(k, res) ->
+      min(res, abs(k_j - k_i) * (y[k] - y[k - 1]))
+    end)
+  end
+
+  def densest_deployment(x, res) do
+    x |> Enum.reduce(res, fn({k_i, v_i}, res) ->
+      x |> Enum.reduce(res, fn({k_j, v_j}, res) ->
+
+        cond do
+          k_i == k_j -> res
+          :ordsets.size(v_i) < 2 or :ordsets.size(v_j) < 2 -> res
+          true ->
+            y = Arrays.new(:ordsets.intersection(v_i, v_j))
+            y_size = Arrays.size(y)
+            check_y(y, res, k_j, k_i, y_size)
+        end
+
+      end)
+    end)
+  end
+
+  def densest_deployment(coordinates) do
+    res = 'inf'
+    x = %{}
+    x = 
+      coordinates 
+      |> Enum.reduce(x, fn([c_k, c_v], x) -> 
+        new_map_set = :ordsets.from_list([c_v])
+        Map.update(x, c_k, new_map_set, fn existing_map_set -> 
+          :ordsets.union(existing_map_set, new_map_set) 
+        end)
+      end)
+
+    res = densest_deployment(x, res)      
+    if res == 'inf', do: 0, else: res
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example - 1
+coordinates = Arrays.new([[0, 3], [2, 3], [1, 2], [0, 1], [2, 1]])
+IO.puts "Densest Deployment: #{Solution.densest_deployment(coordinates)}"
+
+# Example - 2
+coordinates = Arrays.new([[0, 1], [0, 3], [3, 3], [3, 1], [5, 1], [5, 3]])
+IO.puts "Densest Deployment: #{Solution.densest_deployment(coordinates)}"
+
+# Example - 3
+coordinates = Arrays.new([[1, 0], [1, 3], [3, 3], [3, 0]])
+IO.puts "Densest Deployment: #{Solution.densest_deployment(coordinates)}"
+
+# Example - 4
+coordinates = Arrays.new([[0, 0], [1, 3], [3, 3], [3, 0]])
+IO.puts "Densest Deployment: #{Solution.densest_deployment(coordinates)}"

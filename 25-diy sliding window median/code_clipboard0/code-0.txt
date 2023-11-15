@@ -1,0 +1,5 @@
+defmodule Solution do
+  def sliding_window_median(_nums, _k) do
+   # Write your code here
+  end
+end

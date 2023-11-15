@@ -1,0 +1,26 @@
+defmodule Optimization do
+  def optimize_line(line, indices, sources, targets) do
+    [indices, sources, targets]
+    |> Enum.zip
+    |> Enum.sort(:desc) 
+    |> Enum.reduce(line, fn({i, s, t}, line) -> 
+      cond do
+        String.slice(line, i..i+byte_size(s)-1) == s ->
+          start = i + byte_size(s)
+          String.slice(line, 0, i) <> t <> String.slice(line, start..byte_size(line)-1)
+
+        true -> line
+      end
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+line = "foo(input, i);"
+indices = [0, 11]
+sources = ["foo", "i"]
+target = ["foobar", "j+1"]
+IO.inspect Optimization.optimize_line(line, indices, sources, target)

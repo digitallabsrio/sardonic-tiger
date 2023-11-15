@@ -1,0 +1,6 @@
+defmodule Solution do
+  def least_time(_tasks , _t) do
+    # Write your code here
+    -1
+  end
+end

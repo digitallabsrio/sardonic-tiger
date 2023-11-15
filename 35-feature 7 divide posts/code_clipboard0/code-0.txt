@@ -1,0 +1,38 @@
+defmodule Posts do
+  def divide_posts(days, k) do
+    people = k + 1
+    low = Enum.min(days)
+    high = div(Enum.sum(days), people)
+    divide_posts(days, k, low, high)
+  end
+
+  def divide_posts(_days, _k, low, high) when low >= high, do: high
+  def divide_posts(days, k, low, high) do
+    mid = div(low + high + 1, 2)
+
+    # This would denote the posts we currently have 
+    # as we are traversing over the array
+    target = 0
+
+    #  This would tell us how many days we would get after dividing 
+    #  the array in `mid` amount of posts
+    divisions = 0
+
+    {_, divisions} = 
+      days 
+      |> Enum.reduce({target, divisions}, fn(day, {target, divisions}) ->
+        target = target + day 
+        if target >= mid, do: {0, divisions + 1}, else: {target, divisions}
+      end)
+
+    if divisions >= k + 1, do: divide_posts(days, k, mid, high), else: divide_posts(days, k, low, mid - 1)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+days = [1000,2000,3000,4000,5000]
+nodes = 3
+IO.puts "The master node was assigned #{Posts.divide_posts(days, nodes)} posts"

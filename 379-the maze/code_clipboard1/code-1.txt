@@ -1,0 +1,76 @@
+defmodule Solution do
+  def has_path(maze, start, end_var) do
+    size = Arrays.size(maze)
+    visited_places = Arrays.new(List.duplicate(false, length(maze[0])) |> List.duplicate(size))
+    path(maze, start, end_var, visited_places)
+  end
+
+  def up(maze, start, dir) do
+    cond do
+      dir >= 0 and Arrays.new(maze[dir])[start[1]] == 0 -> up(maze, start, dir-1)
+      true -> dir
+    end
+  end
+
+  def down(maze, start, dir) do
+    cond do
+      dir < Arrays.size(maze) and Arrays.new(maze[dir])[start[1]] == 0 -> 
+        down(maze, start, dir+1)
+      true -> dir
+    end
+  end
+
+  def left(maze, start, dir) do
+    cond do
+      dir >= 0 and Arrays.new(maze[start[0]])[dir] == 0 -> left(maze, start, dir-1)
+      true -> dir
+    end
+  end
+
+  def right(maze, start, dir) do
+    cond do
+      dir < Arrays.size(maze) and Arrays.new(maze[start[0]])[dir] == 0 -> 
+        right(maze, start, dir+1)
+      true -> dir
+    end
+  end  
+
+  def path(maze, start, end_var, visited_places) do
+    visited_inner = Arrays.new(visited_places[start[0]])
+    cond do
+      visited_inner[start[1]] == true -> false
+      start[0] == end_var[0] and start[1] == end_var[1] -> true
+      true ->
+        inner_array = put_in(visited_inner[start[1]], true)
+        visited_places = put_in(visited_places[start[0]], inner_array)
+        {r, l, u, d} = {start[1] + 1, start[1] - 1, start[0] - 1, start[0] + 1}
+
+        u = up(maze, start, u) # up
+        d = down(maze, start, d) # down
+        l = left(maze, start, l) # left
+        r = right(maze, start, r) # right
+
+        path(maze, Arrays.new([u + 1, start[1]]), end_var, visited_places) or
+        path(maze, Arrays.new([d - 1, start[1]]), end_var, visited_places) or
+        path(maze, Arrays.new([start[0], l + 1]), end_var, visited_places) or
+        path(maze, Arrays.new([start[0], r - 1]), end_var, visited_places) or
+        false
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+maze = Arrays.new([
+  [0,0,0,0,1],
+  [0,0,1,1,1],
+  [0,0,0,0,0],
+  [1,1,1,1,0],
+  [0,0,0,0,0]
+])
+start = Arrays.new([0,3])
+end_var = Arrays.new([4,3])
+
+IO.inspect Solution.has_path(maze, start, end_var)

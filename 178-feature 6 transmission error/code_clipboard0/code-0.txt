@@ -1,0 +1,46 @@
+defmodule Network do
+  def is_palindrome(_arr, left, right) when left >= right, do: true
+  def is_palindrome(arr, left, right) do
+    cond do
+      arr[left] != arr[right] -> false
+      true -> is_palindrome(arr, left+1, right-1)
+    end
+  end
+
+  def transmission_error(arr) do
+    # Initialize left and right at each end
+    left = 0
+    right = Arrays.size(arr) - 1
+    binary_search(arr, left, right)
+  end
+
+  # No diversion router was used 
+  def binary_search(_arr, left, right) when left >= right, do: 0
+  def binary_search(arr, left, right) do
+    cond do
+      # Clause if elements at both ends are same
+      arr[left] == arr[right] -> binary_search(arr, left + 1, right - 1)
+      true ->
+        # Clause when mismatch occurs
+        cond do
+          # Check if ignoring left gives a palindromic sequnce 
+          is_palindrome(arr, left + 1, right) -> 1 
+          # Check if ignoring right gives a palindromic sequnce 
+          is_palindrome(arr, left, right - 1) -> 1
+          # Multiple routers exist
+          true -> -1
+        end
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+arr = Arrays.new([1, 2, 3, 3, 4, 2, 1])
+
+if Network.transmission_error(arr) == 1 or Network.transmission_error(arr) == 0 do
+    IO.puts "Network Sustained. No Transmission Error Occurred!"
+else
+    IO.puts "Network Broke. Transmission Error Occurred!"
+end

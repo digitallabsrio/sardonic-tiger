@@ -1,0 +1,25 @@
+defmodule MyProcess do
+  def get_missing_id(arr, left, right, new_n) do
+    if left + 1 == right do
+      arr[left] + new_n
+    else
+      # Getting the split point of the list
+      middle = trunc((left + right) / 2)
+      missing_nums = (arr[middle] - arr[left]) - (middle - left)
+      cond do
+        new_n > missing_nums -> 
+          get_missing_id(arr, middle, right, new_n - missing_nums)
+        true -> get_missing_id(arr, left, middle, new_n)
+      end
+    end
+  end
+
+  def resume_process(arr, n) do
+    get_missing_id(arr, 0, Arrays.size(arr)-1, n)
+  end        
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect MyProcess.resume_process(Arrays.new([5, 7, 9, 10, 13]), 3)

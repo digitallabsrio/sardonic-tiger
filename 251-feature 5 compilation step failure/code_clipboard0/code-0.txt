@@ -1,0 +1,29 @@
+defmodule Compilation do
+    @doc """
+    :type n: int
+    :rtype: int
+    """
+    def first_failing_step(n, v) do
+        first = 1
+        last = n
+        binary_search(first, last, v)
+    end
+
+    defp binary_search(first, last, _v) when first >= last, do: first
+    defp binary_search(first, last, v) do
+        mid = div(first + last, 2)
+        # Calling the API to determine if the step fails
+        cond do
+            API.is_failing_step(mid, v) -> binary_search(first, mid, v)
+            true -> binary_search(mid + 1, last, v)
+        end
+    end
+end
+
+## Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+n = 40 # Number of steps
+v = 28 # Failing step
+IO.inspect Compilation.first_failing_step(n, v)

@@ -1,0 +1,46 @@
+defmodule Solution do
+  def compress(chars, ch, i, count) do
+    cond do
+      i < length(chars) and Enum.at(chars, i) == ch -> 
+        chars = List.delete_at(chars, i)
+        compress(chars, ch, i, count+1)
+
+      true -> {chars, count+1}
+    end
+  end
+
+  def compress(i, chars) when i >= length(chars), do: chars |> Enum.join("")
+  def compress(i, chars) do
+    count = 0
+    ch = Enum.at(chars, i)
+    i = c = i + 1
+
+    {chars, count} = compress(chars, ch, i, count)
+
+    {chars, i} = 
+      cond do
+        count > 1 -> 
+          to_string(count) 
+          |> String.graphemes 
+          |> Enum.reduce({chars, c}, fn(j, {chars, c}) ->
+            {List.insert_at(chars, c, j), c+1}
+          end)
+
+        true -> {chars, i}
+      end
+
+    compress(i, chars) 
+  end
+
+  def compress(chars) do
+    i = 0
+    compress(i, chars)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+chars = ["a","a","b","b","b","c","a","a","a","a"]
+IO.inspect Solution.compress(chars)

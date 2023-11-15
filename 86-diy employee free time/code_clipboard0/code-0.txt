@@ -1,0 +1,5 @@
+defmodule Solution do
+   def employee_free_time(_schedule) do
+      # Write your code here
+   end
+end

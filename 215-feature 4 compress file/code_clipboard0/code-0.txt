@@ -1,0 +1,53 @@
+defmodule Compression do
+  def dfs(wordset, word, cache, i) do
+    # If result for current word already calculated then
+    # return from cache
+    cond do
+      Map.has_key?(cache, word) -> cache[word]
+      true ->
+        # Traverse over the word to generate all combinations
+        cond do
+          i < byte_size(word)-1 ->
+          
+            # Divide the word into prefix and suffix
+            prefix = String.slice(word, 0..i-1)
+            suffix = String.slice(word, i..byte_size(word))
+
+            cond do
+              MapSet.member?(wordset, prefix) ->
+            
+              cond do
+                MapSet.member?(wordset, suffix) or dfs(wordset, suffix, cache, i) -> {Map.put(cache, word, true), true}
+                true -> dfs(wordset, word, cache, i+1)
+              end
+
+              true -> dfs(wordset, word, cache, i+1)
+            end
+
+          true -> {Map.put(cache, word, false), false}
+        end      
+    end
+  end
+        
+  def identify_concatenations(words) do
+    # Set for O(1) lookups
+    wordset = MapSet.new(words)
+    cache = %{}
+
+    # Process for each word
+    words
+    |> Enum.reduce(Arrays.empty, fn (word, res) ->
+      {_, result} = dfs(wordset, word, cache, 1)
+      if result, do: Arrays.append(res, word), else: res
+    end)
+    |> Arrays.to_list
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+file_words = ["n", "cat", "cats", "dog", "catsndog"]
+output_string = "#{inspect Compression.identify_concatenations(file_words)}"
+IO.puts "The following words will be compressed: " <> output_string

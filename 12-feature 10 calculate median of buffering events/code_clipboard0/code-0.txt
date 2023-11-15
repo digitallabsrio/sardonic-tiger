@@ -1,0 +1,152 @@
+defmodule Solution do
+    use Bitwise
+
+    def median_sliding_window(nums, k) do
+        # Will store the medians
+        medians = Arrays.new([])
+        # Hash-map will keep track of invalid numbers
+        map = %{}
+
+        # max heap
+        small_list = Heap.max
+        # min heap
+        large_list = Heap.min
+
+        # Index of current incoming element being processed
+        i = 0
+
+        # Initialize the SmallList heap
+        {i, small_list} = 
+            0..k-1
+            |> Enum.reduce({i, small_list}, fn(m, {_, small_list}) ->
+                small_list = small_list |> Heap.push(nums[m])
+                {m, small_list}
+            end)
+
+        i = i + 1
+
+        # Initialize the LargeList heap 
+        {large_list, small_list} = 
+            0..(div(k, 2)-1)//1
+            |> Enum.reduce({large_list, small_list}, fn(_, {large_list, small_list}) ->
+                {element, small_list} = Heap.split(small_list)
+                large_list = large_list |> Heap.push(element)
+                {large_list, small_list}
+            end)
+
+        # Start an infinite loop
+        infinite_recursion(nums, k, medians, map, small_list, large_list, i) |> Arrays.to_list
+    end
+
+    def infinite_recursion(nums, k, medians, map, small_list, large_list, i) do
+        # Get median of current window
+        medians = 
+            cond do
+                k && 1 == 1 -> medians |> Arrays.append(Heap.root(small_list))
+                true ->
+                    temp = (Heap.root(small_list) + Heap.root(large_list)) * 0.5
+                    medians |> Arrays.append(temp)
+            end
+
+        cond do
+            # Break the loop if all of the elements are processed
+            i >= Arrays.size(nums) -> medians
+            true -> 
+                # Outgoing element
+                out_num = nums[i - k]
+                in_num = nums[i]
+                i = i + 1
+                # Balance factor
+                balance = 0
+
+                # Number `outNum` exits window
+                balance = if out_num <= Heap.root(small_list), do: balance + (-1), else: balance + 1
+                # If the outgoing element is not present in the hash-map 
+                # store the `outNum` in the hash-map with value 1,
+                # otherwise increment the count of `outNum` in the hash-map.
+                map = if map[out_num] != nil, do: Map.put(map, out_num, map[out_num]+1), else: Map.put(map, out_num, 1)
+
+                #  Number `inNum` enters window
+                {balance, small_list, large_list} = 
+                    cond do
+                        Heap.size(small_list) > 0 and in_num < Heap.root(small_list) ->
+                            balance = balance + 1
+                            small_list = Heap.push(small_list, in_num)
+
+                            {balance, small_list, large_list}
+                        true -> 
+                            balance = balance - 1
+                            large_list = Heap.push(large_list, in_num)
+
+                            {balance, small_list, large_list}
+                    end
+
+                # Re-balance SmallList 
+                {balance, small_list, large_list} =
+                    cond do
+                        balance < 0 -> 
+                            balance = balance + 1
+                            small_list = Heap.push(small_list, Heap.root(large_list))
+                            large_list = Heap.pop(large_list)
+                            {balance, small_list, large_list}
+
+                        true -> {balance, small_list, large_list}
+                    end
+
+                # Re-balance LargeList 
+                {_, small_list, large_list} =
+                    cond do
+                        balance > 0 -> 
+                            balance = balance - 1
+                            small_list = Heap.pop(small_list)
+                            large_list = Heap.push(large_list, Heap.root(small_list))
+                            {balance, small_list, large_list}
+
+                        true -> {balance, small_list, large_list}
+                    end
+
+                # Remove invalid numbers that should be discarded from SmallList heap tops
+                num = if Heap.size(small_list) > 0, do: map[Heap.root(small_list)], else: nil
+                {small_list, map} = discard_list(small_list, num, map)
+
+                # Remove invalid numbers that should be discarded from LargeList heap tops
+                num = if Heap.size(large_list) > 0, do: map[Heap.root(large_list)], else: nil
+                {large_list, map} = discard_list(large_list, num, map)
+
+                infinite_recursion(nums, k, medians, map, small_list, large_list, i)
+        end
+    end
+
+    def discard_list(list, num, map) do
+        cond do
+            Heap.size(list) > 0 and num != nil and num > 0 ->
+                map = Map.put(map, Heap.root(list), map[Heap.root(list)] - 1)
+                list = Heap.pop(list)
+            
+                num = if Heap.root(list) != nil, do: map[Heap.root(list)], else: num
+                discard_list(list, num, map)
+
+            true -> {list, map}
+        end
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+IO.puts "Example - 1"
+arr = Arrays.new([1, 3, -1, -3, 5, 3, 6, 7])
+k = 3
+IO.puts "Input: array = #{inspect Arrays.to_list(arr)}, k = #{k}"
+output = Solution.median_sliding_window(arr, k)
+IO.puts "Output: Medians = #{inspect output}\n"
+
+# Example 2
+IO.puts "Example - 2"
+arr = Arrays.new([1, 2])
+k = 1
+IO.puts "Input: array = #{inspect Arrays.to_list(arr)}, k = #{k}"
+output = Solution.median_sliding_window(arr, k)
+IO.puts "Output: Medians = #{inspect output}"

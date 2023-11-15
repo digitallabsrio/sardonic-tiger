@@ -1,0 +1,57 @@
+defmodule Expressions do
+  defp check_integer(str) do
+    case Integer.parse(str) do
+      {_, ""} -> :number
+      _ -> :text
+    end
+  end
+
+  def evaluate_expression(expression) do
+    number = 0
+    sign = 1
+    output = 0
+    stack = []
+
+    {number, sign, output, _} = 
+      expression
+      |> String.graphemes
+      |> Enum.reduce({number, sign, output, stack}, fn(c, {number, sign, output, stack}) ->
+        cond do
+          check_integer(c) == :number ->
+              number = number * 10 + String.to_integer(c) # for consecutive digits 98 => 9x10 + 8 = 98
+              {number, sign, output, stack}
+
+          String.equivalent?(c, "-") or String.equivalent?(c, "+") -> 
+              output = output + number * sign
+              sign = if String.equivalent?(c, "-"), do: -1, else: 1
+              number = 0
+              {number, sign, output, stack}
+
+          String.equivalent?(c, "(") ->
+              stack = [output | stack]
+              stack = [sign | stack]
+              output = 0
+              sign = 1
+              {number, sign, output, stack}
+
+          String.equivalent?(c, ")") ->
+              output = output + sign * number
+              [top, top2 | stack] = stack
+              output = (output * top) + top2
+              number = 0 
+              {number, sign, output, stack}
+
+          true -> {number, sign, output, stack}
+        end
+      end)
+
+    output + number * sign
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+expression = "{4 - (10 + 52) + 99}"
+IO.inspect Expressions.evaluate_expression(expression)

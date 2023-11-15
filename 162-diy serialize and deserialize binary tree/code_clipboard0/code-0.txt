@@ -1,0 +1,9 @@
+defmodule BST do
+  def serializer(_root) do
+    # write your code here
+  end
+    
+  def deserializer(_data) do
+    # write your code here
+  end
+end

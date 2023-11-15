@@ -1,0 +1,5 @@
+defmodule Solution do
+    def longest_palindrome(_s) do
+        # Enter your code here
+    end
+end

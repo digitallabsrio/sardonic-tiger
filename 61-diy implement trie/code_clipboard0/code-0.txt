@@ -1,0 +1,17 @@
+defmodule Trie do
+  def init do
+    # write your code here
+  end
+
+  def insert(_obj, _string) do
+    # write your code here
+  end
+
+  def search(_obj, _string) do
+    # write your code here
+  end
+
+  def search_prefix(_obj, _prefix) do
+    # write your code here
+  end
+end

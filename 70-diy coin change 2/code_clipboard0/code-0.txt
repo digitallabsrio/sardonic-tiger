@@ -1,0 +1,6 @@
+defmodule Solution do
+  def change(_coins, _total) do
+    # Write your code here
+    -1
+  end
+end

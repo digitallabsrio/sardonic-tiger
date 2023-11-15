@@ -1,0 +1,6 @@
+defmodule Solution do
+  def is_match(_s, _p) do
+    # Write your code here
+    false
+  end
+end

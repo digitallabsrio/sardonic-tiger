@@ -1,0 +1,100 @@
+defmodule TreeNode do
+  defstruct id: -1, val: nil, children: Arrays.new([])
+  def init(id, val), do: %TreeNode{id: id, val: val}
+end
+
+defmodule DOMStructure do
+  alias Okasaki.Deque, as: Deque
+
+  defstruct nodes: %{}
+  def init, do: %__MODULE__{}
+
+  def update_nodes(tree, _queue, curr, level, _count) when level == 0, do: Map.put_new(tree.nodes, curr, %TreeNode{})
+  def update_nodes(tree, queue, curr, _level, count) do
+    cond do
+      Deque.size(queue) > 0 and count < Deque.size(queue) or Deque.size(queue) == 1 ->
+        {:ok, {next, _}} = Deque.remove_left(queue)
+        Map.put_new(tree.nodes, curr, next)
+      
+      true -> Map.put_new(tree.nodes, curr, %TreeNode{})
+    end     
+  end
+
+  def update_queue(tree, queue, level, size) do
+    count = 0
+
+    0..size-1 
+    |> Enum.reduce({tree, queue, count}, fn(_, {tree, queue, count}) ->
+    
+      # Pop the topmost element and display its value
+      {:ok, {curr, queue}} = Deque.remove_left(queue)
+      # IO.inspect curr.val
+
+      nodes = update_nodes(tree, queue, curr, level, count)
+      tree = %__MODULE__{tree | nodes: nodes}
+
+      # Traverse over the children and add them to the queue
+      queue = 
+        curr.children 
+        |> Enum.reduce(queue, fn(child, queue) -> Deque.insert_right(queue, child) end)
+
+      {tree, queue, count + 1}
+    end)
+  end
+
+  def traversing_dom_tree_queue(tree, queue, level) do
+    size = Deque.size(queue)
+    cond do
+      # Check to see if the queue contains any element
+      size > 0 -> 
+        # If it does, call the update_queue function where the current tree element gets called
+        {tree, queue, _} = update_queue(tree, queue, level, size)
+        traversing_dom_tree_queue(tree, queue, level+1)
+      true -> tree.nodes
+    end
+  end
+
+  # Check to if root is nil or not. If yes, then return it
+  def traversing_dom_tree(_tree, root) when root == nil, do: root
+  def traversing_dom_tree(tree, root) do
+    # Initialize the queue with root
+    queue = Deque.new([root])
+    level = 0
+    traversing_dom_tree_queue(tree, queue, level)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+root = TreeNode.init(1, "body")
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(2, "div")))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(3, "h1")))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(4, "div")))
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(5, "h2"))
+root = put_in(root.children[0].children, value)
+i_value = root.children[0].children[0].children |> Arrays.append(TreeNode.init(10, "ul"))
+root = put_in(root.children[0].children[0].children, i_value)
+value = root.children[0].children |> Arrays.append(TreeNode.init(6, "h3"))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(11, "a"))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(12, "p"))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(13, "table"))
+root = put_in(root.children[0].children[1].children, i_value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(7, "p"))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init(8, "a"))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init(9, "p"))
+root = put_in(root.children[2].children, value)
+
+dom_obj = DOMStructure.init
+
+res = DOMStructure.traversing_dom_tree(dom_obj, root) 
+IO.puts res |> Helper.print_map

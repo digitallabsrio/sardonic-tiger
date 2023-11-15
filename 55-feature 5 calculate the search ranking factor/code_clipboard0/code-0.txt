@@ -1,0 +1,32 @@
+defmodule Ranking do
+  def search_ranking(page_scores) do
+    length = Arrays.size(page_scores)
+    ranking = 
+      List.duplicate(0, length)
+      |> Arrays.new
+      |> Arrays.replace(0, 1)
+
+    ranking = 
+      1..length-1 
+      |> Enum.reduce(ranking, fn(i, ranking) ->
+        Arrays.replace(ranking, i, page_scores[i - 1] * ranking[i - 1])
+      end)
+
+    0..length-1
+    |> Enum.reverse
+    |> Enum.reduce({ranking, 1}, fn(i, {ranking, right}) ->
+      ranking = Arrays.replace(ranking, i, ranking[i] * right)
+      right = right * page_scores[i]
+      {ranking, right}
+    end)
+    |> elem(0)
+    |> Arrays.to_list
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+page_scores = Arrays.new([3, 5, 1, 1, 6, 7, 2, 3, 4, 1, 2])
+IO.inspect Ranking.search_ranking(page_scores)

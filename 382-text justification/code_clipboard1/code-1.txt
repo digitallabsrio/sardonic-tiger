@@ -1,0 +1,63 @@
+defmodule Solution do
+  def update_len_j(words, width, n, len, j) do
+    j..n-1 
+    |> Enum.reduce_while({len, 0}, fn(j, {len, k1}) ->
+      cond do
+        len + 1 + byte_size(words[j]) <= width -> {:cont, {len + 1 + byte_size(words[j]), j}}
+        true -> {:halt, {len, k1}}
+      end
+    end)
+  end
+
+  def text_justify(_words, _width, res, i, n) when i >= n, do: res
+  def text_justify(words, width, res, i, n) do
+    len = -1
+
+    {len, j} = update_len_j(words, width, n, len, i)  
+    j = j + 1
+    spaces = 1
+    extra = 0 # extra left spaces
+
+    {spaces, extra} =
+      cond do
+        j != i+1 and j != n -> 
+          spaces = div((width - len), (j - 1 - i)) + 1
+          extra = rem(width - len, j - 1 - i)
+          {spaces, extra} 
+
+        true -> {spaces, extra} 
+      end
+
+    # Build the row with spaces + extra space + word
+    row = words[i]
+    {row, _} = 
+      i+1..j-1 
+      |> Enum.reduce_while({row, extra}, fn(k, {row, extra}) ->
+        cond do
+          k >= j -> {:halt, {row, extra}}
+          true ->
+            extra = if extra > 0, do: 1, else: 0
+            row = row <> String.duplicate(" ", spaces + extra) <> words[k]
+            {:cont, {row, extra-1}}
+        end
+      end)
+
+    row = row <> String.duplicate(" ", width - byte_size(row))
+    res = [row | res]
+    text_justify(words, width, res, j, n)      
+  end
+
+  def text_justify(words, width) do
+    n = Arrays.size(words)
+    res = []
+    text_justify(words, width, res, 0, n) |> :lists.reverse 
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+words = Arrays.new(["The", "important", "is", "not", "to", "stop", "questioning"])
+width = 16
+IO.inspect Solution.text_justify(words,width)

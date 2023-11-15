@@ -1,0 +1,6 @@
+defmodule Solution do
+  def my_atoi(_str) do  
+    # Write your code here
+    -1
+  end
+end

@@ -1,0 +1,6 @@
+defmodule Solution do
+  def min_area_rect(_points) do
+    # write your code here
+    -1
+  end
+end

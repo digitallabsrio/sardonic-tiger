@@ -1,0 +1,5 @@
+defmodule Solution do
+  def can_convert(_str1, _str2) do
+    # write your code here
+  end
+end

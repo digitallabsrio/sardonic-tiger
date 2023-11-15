@@ -1,0 +1,57 @@
+defmodule Solution do
+  use Bitwise
+
+  def divide(dividend, divisor) do
+    half_min = -4503599600000000
+    max_int = 9007199254740991        
+    min_int = -9007199254740991
+
+    cond do
+      dividend == min_int and divisor == -1 -> max_int
+      true -> 
+        negatives = 2
+        {negatives, dividend} = if dividend > 0, do: {negatives-1, -dividend}, else: {negatives, dividend}
+        {negatives, divisor} = if divisor > 0, do: {negatives-1, -divisor}, else: {negatives, divisor}
+
+        highest_double = divisor
+        highest_two_power = -1
+        {highest_two_power, highest_double} = highest_power_of_2(highest_two_power, highest_double, half_min, dividend)
+
+        quotient = 0
+        quotient = fine_steps(dividend, divisor, highest_two_power, highest_double, quotient)
+
+        if negatives != 1, do: -quotient, else: quotient
+    end
+  end
+
+  def highest_power_of_2(highest_two_power, highest_double, half_min, dividend) do
+    cond do
+      highest_double >= half_min and dividend <= highest_double * 2 ->
+        highest_two_power = highest_two_power + highest_two_power
+        highest_double = highest_double + highest_double
+        highest_power_of_2(highest_two_power, highest_double, half_min, dividend)
+
+      true -> {highest_two_power, highest_double}
+    end
+  end
+
+  def fine_steps(dividend, divisor, highest_two_power, highest_double, quotient) do
+    cond do
+      dividend <= divisor ->
+        {quotient, dividend} = 
+          case {dividend, highest_double} do
+            {first, second} when first <= second -> {quotient + highest_two_power, dividend - highest_double}
+            _ -> {quotient, dividend}
+          end 
+
+        fine_steps(dividend, divisor, highest_two_power >>> 1, highest_double >>> 1, quotient)
+
+      true -> quotient
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.divide(8, 2)

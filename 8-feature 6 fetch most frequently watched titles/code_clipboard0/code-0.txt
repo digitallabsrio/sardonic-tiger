@@ -1,0 +1,90 @@
+defmodule LFUStructure do
+  defstruct capacity: nil, min_freq: 0, freq_dict: %{}, key_dict: %{}
+  def init(capacity), do: %__MODULE__{capacity: capacity}
+
+  def get(obj, key) do
+    cond do
+      Map.has_key?(obj.key_dict, key) -> 
+        {{val, freq}, key_dict} = Map.pop(obj.key_dict, key)
+
+        default_ordmap = Map.get(obj.freq_dict, freq, OrdMap.new())
+        {_, freq_dict_ord} = OrdMap.pop(default_ordmap, key)
+        freq_dict = Map.put(obj.freq_dict, freq, freq_dict_ord)
+
+        min_freq = 
+          cond do
+            freq_dict[freq] == nil and obj.min_freq == freq -> freq + 1
+            true -> obj.min_freq
+          end
+
+        key_dict = Map.put(key_dict, key, {val, freq + 1})
+        default_ordmap = Map.get(freq_dict, freq + 1, OrdMap.new())
+        freq_dict_ord = OrdMap.put(default_ordmap, key, val)
+        freq_dict = Map.put(freq_dict, freq + 1, freq_dict_ord)
+
+        obj = %__MODULE__{obj | min_freq: min_freq, key_dict: key_dict, freq_dict: freq_dict}
+        {obj, val}
+
+      true -> {obj, -1}
+    end
+  end
+
+  def put(obj, _key, _value) when obj.capacity <= 0, do: obj
+  def put(obj, key, value) do
+    cond do
+      Map.has_key?(obj.key_dict, key) ->
+        key_dict = Map.put(obj.key_dict, key, {value, elem(obj.key_dict[key], 1)})
+        obj = %__MODULE__{obj | key_dict: key_dict}
+        get(obj, key) |> elem(0)
+
+      true ->
+
+        obj = 
+          cond do
+            obj.capacity <= map_size(obj.key_dict) ->
+              default_ordmap = Map.get(obj.freq_dict, obj.min_freq, OrdMap.new())
+              del_key = hd(OrdMap.keys(default_ordmap))
+              {_, freq_dict_ord} = OrdMap.pop(default_ordmap, del_key)
+              freq_dict = Map.put(obj.freq_dict, obj.min_freq, freq_dict_ord)
+              key_dict = Map.delete(obj.key_dict, del_key)
+              %__MODULE__{obj | key_dict: key_dict, freq_dict: freq_dict}
+              
+            true -> obj
+          end
+
+        key_dict = Map.put(obj.key_dict, key, {value, 1})
+        default_ordmap = Map.get(obj.freq_dict, 1, OrdMap.new())
+        freq_dict_ord = OrdMap.put(default_ordmap, key, value)
+        freq_dict = Map.put(obj.freq_dict, 1, freq_dict_ord)
+        min_freq = 1
+
+        %__MODULE__{obj | min_freq: min_freq, key_dict: key_dict, freq_dict: freq_dict}
+    end
+  end
+
+  def print_dict(obj) do
+    obj.key_dict 
+    |> Enum.each(fn {k, v} -> IO.write("(#{k}, #{elem(v, 0)})") end)
+    IO.puts("")
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.puts("The most frequently watched titles are: (key, value)")
+obj = LFUStructure.init(2)
+obj = obj |> LFUStructure.put(10, 20)
+obj = obj |> LFUStructure.put(15, 25)
+{obj, _} = obj |> LFUStructure.get(10)
+obj |> LFUStructure.print_dict
+
+obj = obj |> LFUStructure.put(20, 30)
+{obj, _} = obj |> LFUStructure.get(15)
+obj |> LFUStructure.print_dict
+
+obj = obj |> LFUStructure.put(25, 35)
+{obj, _} = obj |> LFUStructure.get(10)
+{obj, _} = obj |> LFUStructure.get(20)
+{obj, _} = obj |> LFUStructure.get(25)
+obj |> LFUStructure.print_dict

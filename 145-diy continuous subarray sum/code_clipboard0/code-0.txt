@@ -1,0 +1,5 @@
+defmodule Solution do
+    def check_subarray_sum(_numbers, _k) do
+        # write your code here
+    end
+end

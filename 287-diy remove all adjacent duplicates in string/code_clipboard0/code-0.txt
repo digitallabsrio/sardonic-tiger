@@ -1,0 +1,6 @@
+defmodule Solution do
+  def remove_duplicates(_s) do
+    # Write your code here
+    ""
+  end
+end

@@ -1,0 +1,57 @@
+defmodule SearchResults do
+  def reorganize_results(initial_order) do
+    max_freq =
+      initial_order 
+      |> String.graphemes 
+      |> Enum.frequencies 
+      |> Map.values 
+      |> Enum.max
+
+    cond do
+      2 * max_freq - 1 > String.length(initial_order) -> initial_order
+      true ->
+
+        heap = 
+          initial_order 
+          |> String.graphemes 
+          |> Enum.frequencies
+          |> Enum.reduce(Heap.new(), fn ({c, freq}, heap) ->
+            heap |> Heap.push({freq*-1, c})
+          end)
+
+        result = Arrays.new()
+        rearranging_characters(heap, result)
+    end
+  end
+
+  def rearranging_characters(heap, result) do
+    cond do
+      Heap.size(heap) > 0 ->
+        {{freq, c}, heap} = heap |> Heap.split
+
+        cond do
+          result == nil or c != result[-1] ->
+            result = result |> Arrays.append(c)
+            heap = if freq != -1, do: heap |> Heap.push({freq+1, c}), else: heap
+            rearranging_characters(heap, result)
+
+          true ->
+            {{freq1, c1}, heap} = heap |> Heap.split
+            result = result |> Arrays.append(c1)
+
+            heap = heap |> Heap.push({freq, c})
+            heap = if freq1 != -1, do: heap |> Heap.push({freq1+1, c1}), else: heap
+            rearranging_characters(heap, result)
+        end
+
+      true -> Enum.join(result, "")
+    end
+  end
+end
+
+## Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+initial_order = "bbnnc"
+IO.inspect SearchResults.reorganize_results(initial_order)

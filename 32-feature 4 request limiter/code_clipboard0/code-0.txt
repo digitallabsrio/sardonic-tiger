@@ -1,0 +1,32 @@
+defmodule RequestLimiter do
+  defstruct requests: %{}
+
+  def init, do: %__MODULE__{}
+
+  def request_approver(rl, timestamp, request) do 
+    #Returns true if the message should be printed in the given timestamp, 
+    #otherwise returns false.
+    cond do
+      (!(Map.has_key?(rl.requests, request)) or timestamp - rl.requests[request] >= 5) ->
+        myrl = %__MODULE__{requests: Map.put(rl.requests, request, timestamp)}
+        IO.puts "Request Accepted"
+        {true, myrl}
+
+      true -> 
+        IO.puts "Request Rejected"
+        {false, rl}
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+obj = RequestLimiter.init
+{_, res} = obj |> RequestLimiter.request_approver(1, "send_message")
+{_, res_two} = res |> RequestLimiter.request_approver(2, "block")
+{_, res_three} = res_two |> RequestLimiter.request_approver(3, "send_message")
+{_, res_four} = res_three |> RequestLimiter.request_approver(8, "block")
+{_, res_five} = res_four |> RequestLimiter.request_approver(10, "send_message")
+{_, _res_six} = res_five |> RequestLimiter.request_approver(11, "send_message")

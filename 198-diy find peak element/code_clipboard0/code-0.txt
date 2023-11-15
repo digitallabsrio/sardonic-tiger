@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_peak_element(_nums) do
+    # write your code here
+    -1
+  end
+end

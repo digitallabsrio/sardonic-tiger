@@ -1,0 +1,6 @@
+defmodule Solution do
+  def pow(_base, _power) do
+    # write your code here
+    -1
+  end
+end

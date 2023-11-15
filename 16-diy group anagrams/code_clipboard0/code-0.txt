@@ -1,0 +1,6 @@
+defmodule Solution do
+  def group_anagrams(_strs) do
+    # write your code here
+    []
+  end
+end

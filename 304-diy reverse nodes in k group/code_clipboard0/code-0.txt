@@ -1,0 +1,6 @@
+defmodule Solution do
+  def reverse_linked_list(head, _k) do
+    # write your code here
+    head
+  end
+end

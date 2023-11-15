@@ -1,0 +1,42 @@
+defmodule Stocks do
+  def milestone_reached(matrix, milestone) do
+    m = Arrays.size(matrix)
+    n = Arrays.size(matrix[0])
+
+    cond do
+      m == 0 -> false
+      true ->
+        # Binary search
+        left = 0 
+        right = m * n - 1
+        binary_search(matrix, milestone, left, right, n)
+    end
+  end
+
+  defp binary_search(_matrix, _milestone, left, right, _n) when left > right, do: [-1, -1]
+  defp binary_search(matrix, milestone, left, right, n) do
+    middle_ind = div(left + right, 2)
+    middle_element = (matrix[div(middle_ind, n)])[rem(middle_ind, n)]
+    cond do
+      milestone == middle_element -> [div(middle_ind, n), rem(middle_ind, n)]
+      true ->
+        cond do
+          milestone < middle_element -> binary_search(matrix, milestone, left, middle_ind-1, n)
+          true -> binary_search(matrix, milestone, middle_ind+1, right, n)
+        end
+    end
+  end
+end
+    
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+matrix = Arrays.new([
+  Arrays.new([0,2,4,6,8]),
+  Arrays.new([10,12,14,18,22]),
+  Arrays.new([24,30,34,60,64])
+])
+milestone = 24
+[res_0, res_1] = Stocks.milestone_reached(matrix, milestone)
+IO.puts "Milestone reached on day #{res_1 + 1} of week #{res_0 + 1}"

@@ -1,0 +1,84 @@
+defmodule Solution do
+  # find the paths with dfs
+  def dfs(_graph, ans, path, end_word, w) when w == end_word, do: Arrays.append(ans, path)
+  def dfs(graph, ans, path, end_word, w) do
+    graph[w] 
+    |> Enum.reduce(ans, fn(nw, ans) ->
+      new_path = path |> Arrays.append(nw)
+      dfs(graph, ans, new_path, end_word, nw)
+    end)
+  end
+            
+  def possible_results(begin_word, end_word, _word_list) when begin_word == end_word, do: [begin_word] 
+  def possible_results(begin_word, end_word, word_list) do
+    graph = %{}
+    helper = "qwertyuiopasdfghjklzxcvbnm" |> String.graphemes
+    dic_set = MapSet.new(word_list)
+
+    layer = MapSet.new([begin_word])
+    dic_set = MapSet.delete(dic_set, begin_word)
+    stop = false
+
+    graph = layer(graph, dic_set, layer, helper, end_word, stop)
+    ans = Arrays.new([])
+    path = Arrays.new([begin_word])
+
+    dfs(graph, ans, path, end_word, begin_word)
+  end
+
+  def update_graph(graph, w, nw) do 
+    new_set = MapSet.new([nw])
+    Map.update(graph, w, new_set, fn curr_set -> MapSet.union(curr_set, new_set) end)
+  end
+
+  defp get_nw(w, c, i, len), do: String.slice(w, 0, i) <> c <> String.slice(w, i+1..len)
+
+  def layer(graph, dic_set, layer, helper, end_word, stop) do
+    cond do
+      MapSet.size(layer) > 0 and !stop ->
+        new_layer = MapSet.new()
+        {new_layer, graph, stop} = 
+          layer 
+          |> Enum.reduce({new_layer, graph, stop}, fn(w, {new_layer, graph, stop}) ->
+            0..byte_size(w)-1 
+            |> Enum.reduce({new_layer, graph, stop}, fn(i, {new_layer, graph, stop}) ->
+              layer(graph, dic_set, new_layer, helper, end_word, w, stop, i)
+            end)
+          end)
+
+        # removing unecessary nodes
+        dic_set = MapSet.difference(dic_set, new_layer)
+        layer(graph, dic_set, new_layer, helper, end_word, stop)
+      
+      true -> graph
+    end
+  end
+
+  def layer(graph, dic_set, new_layer, helper, end_word, w, stop, i) do
+    helper 
+    |> Enum.reduce({new_layer, graph, stop}, fn(c, {new_layer, graph, stop}) ->
+      nw = get_nw(w, c, i, byte_size(w)-1)
+
+      new_set = MapSet.put(new_layer, nw)
+      new_graph = update_graph(graph, w, nw)
+      {new_layer, graph} = if MapSet.member?(dic_set, nw), do: {new_set, new_graph}, else: {new_layer, graph}
+
+      # if we find endWord in this layer, there is no need to do next layer
+      stop = if String.equivalent?(nw, end_word), do: true, else: stop
+      {new_layer, graph, stop}
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+initial_word = "hit"
+final_word = "cog"
+word_group = ["hot","dot","dog","lot","log","cog","lit"]
+
+IO.puts "All minimum sequences are:"
+output = Solution.possible_results(initial_word, final_word, word_group)
+
+IO.inspect output |> Helper.printer

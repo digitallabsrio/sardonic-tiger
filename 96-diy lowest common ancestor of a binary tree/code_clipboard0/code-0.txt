@@ -1,0 +1,5 @@
+defmodule Solution do
+  def lca(_root, _node1, _node2) do
+    # write your code here
+  end
+end

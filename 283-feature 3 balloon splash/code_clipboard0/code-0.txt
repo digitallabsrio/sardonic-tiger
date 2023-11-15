@@ -1,0 +1,39 @@
+defmodule Solution do
+  def remove_duplicates(str, k) do
+    stack = Arrays.new([])
+
+    stack = 
+      str 
+      |> String.graphemes 
+      |> Enum.reduce(stack, fn(char, stack) -> 
+        cond do
+          Arrays.size(stack) > 0 and (stack[-1])[0] == char ->
+            {:ok, {last_element, stack}} = stack |> Arrays.extract
+            last_element = Arrays.replace(last_element, 1, last_element[1]+1)
+            stack = stack |> Arrays.append(Arrays.new([last_element[0], last_element[1]]))
+
+            cond do
+              # If the character count reaches k, pop it from the stack
+              (stack[-1])[1] == k -> 
+                {:ok, {_, stack}} = stack |> Arrays.extract
+                stack
+              true -> stack
+            end
+
+          true -> stack |> Arrays.append(Arrays.new([char, 1]))
+        end
+      end)
+
+    result = ""
+    # Obtain the remaining characters from the stack and concatenate in the result
+    stack 
+    |> Enum.reduce(result, fn(sk, result) -> 
+      result <> String.duplicate(sk[0], sk[1])
+    end)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.remove_duplicates("sammmaddkkkdasa", 3)

@@ -1,0 +1,5 @@
+defmodule Solution do
+  def maximize_sweetness(_sweetness, _k) do
+    # write your code here  
+  end
+end

@@ -1,0 +1,97 @@
+defmodule FreqStack do
+  # Declare a FreqStack struct containing frequency and group hashmaps
+  # and max_frequency integer
+  defstruct frequency: %{}, group: %{}, max_frequency: 0
+
+  # Use constructor to initialize the FreqStack object
+  def init, do: %__MODULE__{}
+
+  # Use Push function to push the ShowName into the FreqStack
+  def push(obj, show_name) do
+
+    # Get the frequency and increment it for the given ShowName
+    obj = 
+      cond do
+        obj.frequency[show_name] -> 
+          %__MODULE__{obj | frequency: Map.put(obj.frequency, show_name, obj.frequency[show_name] + 1)}
+        
+        true -> %__MODULE__{obj | frequency: Map.put(obj.frequency, show_name, 1)}
+      end
+
+    # Check if the maximum frequency is lower that the new frequency
+    # of the given show
+    obj = 
+      cond do
+        obj.frequency[show_name] > obj.max_frequency ->
+          %__MODULE__{obj | max_frequency: obj.frequency[show_name]}
+
+        true -> obj
+      end
+
+    # Save the given ShowName for the new calculated frequency
+    cond do
+      Map.has_key?(obj.group, obj.frequency[show_name]) -> 
+        key = obj.frequency[show_name]
+        group = update_in(obj.group, [key], &([show_name | &1]))
+        %__MODULE__{obj | group: group}
+
+      true ->
+        key = obj.frequency[show_name]
+        group = Map.put(obj.group, key, [])
+        group_list = update_in(group, [key], &([show_name | &1]))
+        %__MODULE__{obj | group: group_list}
+    end
+  end
+
+  # Use the Pop function to pop the ShowName from the FreqStack
+  def pop(obj) do
+    # Initialize an empty show string
+    cond do
+      Map.has_key?(obj.group, obj.max_frequency) ->
+
+        # Fetch the top of the group[obj.max_frequency] stack
+        show = Map.get(obj.group, obj.max_frequency) |> List.first
+
+        # Pop the top of the group[obj.max_frequency] stack
+        group = Map.get(obj.group, obj.max_frequency) |> tl
+        g = Map.put(obj.group, obj.max_frequency, group)
+        
+        # Decrement the frequency after the show has been popped
+        f = Map.put(obj.frequency, show, obj.frequency[show] - 1)
+        obj = %__MODULE__{obj | frequency: f, group: g}
+
+        # update max_frequency
+        obj = 
+          cond do
+            length(obj.group[obj.max_frequency]) == 0 -> %__MODULE__{obj | max_frequency: obj.max_frequency - 1}
+            true -> obj
+          end
+
+        {show, obj}
+
+      true -> {"", obj}
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+obj = 
+  FreqStack.init
+  |> FreqStack.push("Queen's Gambit")
+  |> FreqStack.push("Teen Wolf")
+  |> FreqStack.push("Queen's Gambit")
+  |> FreqStack.push("Teen Wolf")
+  |> FreqStack.push("Bigderton")
+  |> FreqStack.push("Queen's Gambit")
+
+0..6 
+|> Enum.reduce(obj, fn (_, obj) ->
+  IO.puts "...User navigates to the browser..."
+  {val, obj} = FreqStack.pop(obj)
+  IO.puts "Continue Watching : #{val}\n"
+
+  obj
+end)

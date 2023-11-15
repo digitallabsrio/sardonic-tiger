@@ -1,0 +1,49 @@
+defmodule Virus do
+  def detect_virus(s, k) when k == 0 or byte_size(s) == 0, do: 0
+  def detect_virus(s, k) do
+    # left and right pointers
+    left = right = 0
+    # dummy variables
+    start = end_var = 0
+
+    character_map = Map.new() # character -> its rightmost position
+    _max_len = 1
+
+    detect_virus(s, k, character_map, left, right, start, end_var)
+  end
+
+  def detect_virus(s, k, character_map, left, right, start, end_var) do
+    cond do
+      right < byte_size(s) ->
+        # add new character and move right pointer
+        character_map = Map.put(character_map, String.at(s, right), right)
+        right = right + 1
+
+        # This clause checks if window contains more than k characters
+        cond do
+          map_size(character_map) == k + 1 ->
+            min_idx = Enum.min(Map.values(character_map))
+            character_map = Map.delete(character_map, String.at(s, min_idx))
+            # move left pointer of the window
+            left = min_idx + 1
+
+            detect_virus(s, k, character_map, left, right, start, end_var)
+          
+          (end_var - start) < (right - left) ->
+            detect_virus(s, k, character_map, left, right, left, right)
+          
+          true -> detect_virus(s, k, character_map, left, right, start, end_var)
+        end
+
+      true -> String.slice(s, start, end_var)
+    end
+  end
+end
+
+#Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+infected_dna = "ababffzzeee"
+k = 3 # supplied from a hidden program
+IO.puts Virus.detect_virus(infected_dna, k)

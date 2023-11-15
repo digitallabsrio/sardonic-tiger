@@ -1,0 +1,69 @@
+defmodule DisplayLobby do
+    defstruct stack: []
+
+    def init(root) do 
+        push_all(%__MODULE__{}, root)
+    end
+
+    def push_all(obj, node) do
+      case node do
+         nil -> obj
+         _ -> 
+            obj = %__MODULE__{obj | stack: [node | obj.stack]}
+            node = node.left_child
+            push_all(obj, node)
+      end
+    end
+
+   def has_next(obj), do: length(obj.stack) > 0
+
+   def next_name(obj) do
+      {tmpNode, stack} = List.pop_at(obj.stack, 0)
+      obj = %__MODULE__{obj | stack: stack}
+      obj = push_all(obj, tmpNode.right_child)
+      {obj, tmpNode.val}
+   end
+
+   def page_loop(obj, res, index, size) do
+      cond do
+         index == size -> {obj, res} 
+         true ->   
+            case has_next(obj) do
+               true ->
+                     {obj, tmpNode_value} = next_name(obj)
+                     res = [tmpNode_value | res]
+                     page_loop(obj, res, index+1, size)
+               _ -> {obj, res} 
+            end
+      end
+   end
+   def next_page(obj) do
+      res = []
+      {obj, res} = page_loop(obj, res, 0, 10)
+      {obj, res |> :lists.reverse}
+   end
+end
+
+## Driver code
+defmodule Main do
+   def main do
+      IO.puts "-----------------------------"
+      IO.puts "PROGRAM OUTPUT:\n"
+
+      bst = BinarySearchTree.init
+      names = ["Jeanette", "Latasha", "Elvira", "Caryl", "Antoinette", "Cassie", "Charity", "Lyn", "Elia", "Anya", "Albert", "Cherlyn", "Lala", "Kandice", "Iliana"]
+
+      bst = names |> Enum.reduce(bst, fn name, acc -> 
+         BinarySearchTree.insert(acc, name)
+      end)
+
+      display = DisplayLobby.init(bst.root)
+
+      {display, res} = display |> DisplayLobby.next_page
+      IO.inspect res
+      {display, res} = display |> DisplayLobby.next_page
+      IO.inspect res
+      {_, res} = display |> DisplayLobby.next_page
+      IO.inspect res
+   end
+end

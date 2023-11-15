@@ -1,0 +1,6 @@
+defmodule Solution do
+  def num_decodings(_str) do
+    # write your code here
+    -1
+  end
+end

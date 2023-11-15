@@ -1,0 +1,162 @@
+defmodule Solution do
+  # Assume that the linked list has at least t nodes.
+  # Reverse t nodes of the given linked list.
+  defp is_empty(%ListNode{}), do: false  
+  defp is_empty(_), do: true
+
+  def reverse_transactions(head, t) do
+    # Head of the final list that we need to return as the output.
+    new_head = nil
+    # A pointer to traverse the original list.
+    ptr = head
+    # Calling Reverse transactions function
+    reverse_transactions(head, head, t, ptr, new_head)
+  end
+
+  def reverse_transactions(head, head2, t, ptr, new_head, tail \\ nil) do
+    # Keep traversing until there are nodes in the list
+    cond do
+      head != nil -> 
+        # A counter to check if equal to t
+        count = 0
+        # Updating counter and ptr
+        {count, ptr} = find_node_til_count(ptr, count, t)
+
+        cond do
+          # If we counted t nodes, then we reverse them. 
+          count == t -> 
+            # Reverse these t nodes and get the new head of the reversed list
+            {dummy_tail, rev_head} = reverse(head, t) 
+
+            # new_head is the head of the final linked list
+            new_head = if !new_head, do: rev_head, else: new_head 
+
+            {tail, new_head} = 
+              cond do
+                tail != nil ->
+                  tail = %ListNode{tail | next: rev_head}
+                  {tail, update_head(new_head, rev_head)}
+
+                true -> {dummy_tail, new_head}
+              end
+
+            head2 = if ptr != nil and (ptr.next == nil or rem(size_list(ptr, 0), 2) == 0), do: ptr, else: head2              
+            reverse_transactions(ptr, head2, t, ptr, new_head, tail)
+
+          true -> 
+
+            # if any nodes are not reversed,  then attack them to the reversed list
+            cond do
+              count == 0 -> new_head
+              true -> 
+                # Reverse these t nodes and get the new head of the reversed list
+                {dummy_tail, rev_head} = reverse(head2, t) 
+
+                # # new_head is the head of the final linked list
+                new_head = if !new_head, do: rev_head, else: new_head 
+
+                cond do
+                  tail != nil ->
+                    tail = %ListNode{tail | next: head2}
+                    {tail, update_head(new_head, head2)}
+
+                  true -> {dummy_tail, new_head}
+                end
+                |> elem(1)
+            end
+        end
+      true -> new_head
+    end
+  end
+
+  #  Count the first t nodes
+  def find_node_til_count(ptr, count, t) do
+    cond do
+      ptr != nil and count < t -> find_node_til_count(ptr.next, count+1, t)
+      true -> {count, ptr}
+    end
+  end
+
+  def update_head(nil, rev_head), do: rev_head
+  def update_head(new_head, rev_head) do
+    temp = new_head
+    if temp.next != nil do
+        %{temp | next: update_head(new_head.next, rev_head)}
+    else
+        %{temp | next: rev_head}
+    end
+  end
+
+  def size_list(ptr, count) do
+    case is_empty(ptr.next) do
+      false -> size_list(ptr.next, count+1)
+      _ -> count + 1
+    end
+  end
+
+  def reverse(head, t) do
+    reverse_helper(head, t)
+  end
+
+  # Track the next node to traverse in the original list
+  defp reverse_helper(ptr, t, new_head \\ nil, tail \\ nil) do
+    cond do
+      t > 0 ->
+        cond do
+          ptr != nil ->
+            case is_empty(ptr.next) do
+              # At the beginning of the reversed list,
+              # Insert the node pointed to by `ptr`
+              # And move on to the next node
+              # Also, decrement the count of nodes to be reversed by 1
+              false -> 
+                tail = 
+                  cond do
+                    new_head != nil and new_head.next == nil ->
+                      if tail == nil, do: new_head, else: tail
+                    true -> tail
+                  end
+
+                reverse_helper(ptr.next, t-1, %ListNode{ptr | next: new_head}, tail)
+            
+              # For the head condition
+              _ -> {tail, %ListNode{ptr | next: new_head}}
+            end 
+
+          true -> {tail, new_head}
+        end
+
+      # Return reversed list's head
+      true -> {tail, new_head}
+    end
+  end
+end
+
+# Driver Code
+defmodule Main do
+  def main do 
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    head = ListNode.init(1)
+    head = %ListNode{head | next: ListNode.init(2)}
+    head = %ListNode{head | next: %ListNode{head.next | next: ListNode.init(3)}}
+
+    next_3 = %ListNode{head.next.next | next: ListNode.init(4)}
+    head = %ListNode{head | next: %ListNode{head.next | next: next_3}}
+
+    next_4 = %ListNode{head.next.next | next:  %ListNode{head.next.next.next | next: ListNode.init(5)}}
+    head = %ListNode{head | next: %ListNode{head.next | next: next_4}}
+
+    tempHead = head
+    
+    n = LinkedList.display(tempHead, 0) # number of stock transaction requests
+    k = 2 # number of brokers
+    t = div(n, k)
+
+    cond do
+      t <= 0 -> IO.puts "The expected 't' to have value from 1 to length of the linked list only."
+      true -> Solution.reverse_transactions(head, t) |> LinkedList.display
+    end
+  end
+end

@@ -1,0 +1,81 @@
+defmodule ShoppingCart do
+  defp check_integer(str) do
+    case Integer.parse(str) do
+      {_, ""} -> :number
+      _ -> :text
+    end
+  end
+
+  def update_total(data, symbol, current_data, last_data, total, size) do
+    0..size-1
+    |> Enum.reduce({total, last_data, current_data, symbol}, fn(i, {total, last_data, current_data, symbol}) ->
+      # currentChar allows us to iterate in a string.
+      current_char = String.at(data, i)
+
+      # First we'll check if the current_char is a digit, if true 
+      # the character will be converted to an integer added to the
+      # current_data and then stored in current_data.
+      current_data = 
+        cond do
+          check_integer(current_char) == :number ->
+            {index, _} = :binary.match("0123456789", current_char)
+            (current_data * 10) + index
+
+          true -> current_data
+        end
+
+      cond do
+        # If current_char is not a digit or space, we'll start 
+        # evaluating the given expression. 
+        check_integer(current_char) != :number and !String.equivalent?(current_char, " ") or i == size-1 ->
+          {total, last_data} = 
+            case symbol do
+              # If the symbol is equal to '+', the last_data will be added to the total
+              # and current_data will be saved in the last_data.
+              "+" -> {total + last_data, current_data}
+              # Same goes for '-' operation, the last_data gets added to the total
+              # and -current_data get saved in the last_data.
+              "-" -> {total + last_data, -current_data}
+              # If the symbol is  equal to '*', last_data gets multiplied with current_data
+              # and the result get saved in the last_data.
+              "*" -> {total, last_data * current_data}
+              # If the symbol is  equal to '/', last_data gets divided with current_data
+              # and the result get saved in the last_data.
+              "/" -> {total, div(last_data, current_data)}
+            end
+
+          {total, last_data, 0, current_char}
+
+        true -> {total, last_data, current_data, symbol}
+      end
+    end)
+  end
+
+  def calculate_total_amount(data) do
+    size = byte_size(data)
+
+    cond do
+      size == 0 -> 0
+      true ->
+        # current_data is used to keep track of current number.
+        # last_data will keep a track of last number used/evaluated.
+        # total will be used to store the final result of the evaluated expression.
+        current_data = last_data = total = 0
+
+        # symbol is used to keep a track of operators present in a string and 
+        # perform the evaluation.
+        symbol = "+"
+
+        {total, last_data, _, _} = update_total(data, symbol, current_data, last_data, total, size)
+        total + last_data
+    end
+  end
+end
+
+# Driver code
+cart_data = "2+3/7-1"
+total_amount = ShoppingCart.calculate_total_amount(cart_data)
+
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.puts "Total amount of the cart is: #{total_amount}"

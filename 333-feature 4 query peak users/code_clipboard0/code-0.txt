@@ -1,0 +1,109 @@
+defmodule PeakUsers do
+  # for the brute force solution -> users
+  # # for the caching rows solution -> cache and smart_cache
+  defstruct users: Arrays.new([]), cache: Arrays.new([]), smart_cache: Arrays.new([])
+
+  def init(users) do
+    # Section Start - Brute Force
+    obj = %__MODULE__{users: users}
+    # Section Stop - Brute Force
+
+    # Section Start - Caching Rows
+      obj = 
+        cond do
+          Arrays.size(obj.users) == 0 or Arrays.size(obj.users[0]) == 0 -> nil
+          true ->
+            value = Arrays.new(List.duplicate(0, Arrays.size(obj.users[0])+1))
+            obj = %__MODULE__{obj | cache: obj.cache |> Arrays.resize(Arrays.size(obj.users), value)}
+
+            0..Arrays.size(obj.users)-1 |> Enum.reduce(obj, fn(i, obj) ->
+              0..Arrays.size(obj.users[0])-1 |> Enum.reduce(obj, fn(j, obj) ->
+                new_value = (obj.cache[i])[j] + (obj.users[i])[j]
+                inner_array = Arrays.replace(obj.cache[i], j+1, new_value)
+                %__MODULE__{obj | cache: obj.cache |> Arrays.replace(i, inner_array)}
+              end)  
+            end)
+        end
+    # # Section End - Caching Rows
+
+    # # Section Start - Caching Smart
+      cond do
+        Arrays.size(obj.users) == 0 or Arrays.size(obj.users[0]) == 0 -> nil
+        true ->
+          value = Arrays.new(List.duplicate(0, Arrays.size(obj.users[0])+1))
+          obj = %__MODULE__{obj | smart_cache: obj.smart_cache |> Arrays.resize(Arrays.size(obj.users)+1, value)}
+
+          0..Arrays.size(obj.users)-1 |> Enum.reduce(obj, fn(i, obj) ->
+            0..Arrays.size(obj.users[0])-1 |> Enum.reduce(obj, fn(j, obj) ->
+              new_value = (obj.smart_cache[i+1])[j] + (obj.smart_cache[i])[j+1] + (obj.users[i])[j] - (obj.smart_cache[i])[j]
+              inner_array = Arrays.replace(obj.smart_cache[i+1], j+1, new_value)
+              %__MODULE__{obj | smart_cache: obj.smart_cache |> Arrays.replace(i+1, inner_array)}
+            end)  
+          end)
+      end
+    # Section End - Caching Smart
+  end
+
+  # Brute Force
+  def brute_force(obj, row1, col1, row2, col2) do
+    sum = 0
+
+    row1..row2 |> Enum.reduce(sum, fn(r, sum) ->
+      col1..col2 |> Enum.reduce(sum, fn(c, sum) ->
+        sum + (obj.users[r])[c]
+      end)
+    end)
+
+  end
+ 
+  # Caching Rows
+  def cache_rows(obj, row1, col1, row2, col2) do
+    sum = 0
+
+    row1..row2 |> Enum.reduce(sum, fn(i, sum) ->
+      sum + (obj.cache[i])[col2 + 1] - (obj.cache[i])[col1]
+    end)
+
+  end
+
+  # Caching Smarter
+  def cache_smart(obj, row1, col1, row2, col2) do
+    (obj.smart_cache[row2 + 1])[col2 + 1] - (obj.smart_cache[row1])[col2 + 1] - (obj.smart_cache[row2+1])[col1] + (obj.smart_cache[row1])[col1]
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+users = Arrays.new([
+  Arrays.new([1, 2, 3]), 
+  Arrays.new([4, 5, 6]), 
+  Arrays.new([7, 8, 9])
+])
+pu = PeakUsers.init(users);
+    
+# Example - 1
+row1 = 0
+col1 = 1
+row2 = 2
+col2 = 2
+IO.puts "Example - 1:"
+IO.puts "Peak Number of Users (Brute Force): #{pu |> PeakUsers.brute_force(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Rows): #{pu |> PeakUsers.cache_rows(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Smarter): #{pu |> PeakUsers.cache_smart(row1, col1, row2, col2)}"
+
+# Example - 2
+row1 = 1 = col1
+row2 = col2 = 2;
+IO.puts "Example - 2:"
+IO.puts "Peak Number of Users (Brute Force): #{pu |> PeakUsers.brute_force(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Rows): #{pu |> PeakUsers.cache_rows(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Smarter): #{pu |> PeakUsers.cache_smart(row1, col1, row2, col2)}"
+
+# Example - 3
+row1 = col1 = 0 
+row2 = col2 = 2;
+IO.puts "Example - 3:"
+IO.puts "Peak Number of Users (Brute Force): #{pu |> PeakUsers.brute_force(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Rows): #{pu |> PeakUsers.cache_rows(row1, col1, row2, col2)}"
+IO.puts "Peak Number of Users (Caching Smarter): #{pu |> PeakUsers.cache_smart(row1, col1, row2, col2)}"

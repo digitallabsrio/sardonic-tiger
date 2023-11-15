@@ -1,0 +1,6 @@
+defmodule Solution do
+  def missing_element(_arr, _k) do
+    # write your code here
+    -1
+  end
+end

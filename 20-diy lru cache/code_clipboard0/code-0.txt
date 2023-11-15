@@ -1,0 +1,19 @@
+defmodule LRUCache do
+  defstruct capacity: nil, cache_vals: OrdMap.new()
+  def init(capacity), do: %__MODULE__{capacity: capacity}
+
+  def set(obj, _key, _value) do
+    # Write your code here
+    obj
+  end
+
+  def get(obj, _key) do
+    # Write your code here
+    {obj, -1}
+  end
+
+  def get_cache(obj) do
+    obj.cache_vals 
+    |> Enum.reduce("", fn({k, v}, res) -> res <> "(#{k},#{v})" end)
+  end
+end

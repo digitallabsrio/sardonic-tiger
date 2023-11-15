@@ -1,0 +1,12 @@
+defmodule Solution do
+    defstruct []
+
+    def init(_nums) do
+        # write your code here
+    end
+
+    def pick(_obj, _target) do
+        # write your code here
+        -1
+    end
+end

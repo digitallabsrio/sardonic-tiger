@@ -1,0 +1,59 @@
+defmodule Routers do
+    def dfs(grid, cache, i, j) do
+        cond do
+            (cache[i])[j] > 0 -> (cache[i])[j]
+            true ->
+                m = Arrays.size(grid)
+                n = Arrays.size(grid[0])
+                val = (grid[i])[j]
+
+                # Up
+                path_up = if i >= 0 and val < (grid[i-1])[j], do: dfs(grid, cache, i-1, j), else: 0                
+                # Down
+                path_down = if i < m - 1 and val < (grid[i+1])[j], do: dfs(grid, cache, i+1, j), else: 0                
+                # Left
+                path_left = if j >= 0 and val < (grid[i])[j-1], do: dfs(grid, cache, i, j-1), else: 0
+                # Right
+                path_right = if j < n - 1 and val < (grid[i])[j+1], do: dfs(grid, cache, i, j+1), else: 0                   
+
+                max1 = max(path_up, path_down)
+                max2 = max(path_left, path_right)
+                
+                cache
+                |> Arrays.replace(i, Arrays.replace(cache[i], j, 1 + max(max1, max2)))
+                |> Arrays.get(i)
+                |> Arrays.get(j)          
+        end
+    end
+
+    def maximum_routers(grid) do
+        cond do
+            Arrays.size(grid) <= 0 or Arrays.size(grid[0]) <= 0 -> 0
+            true ->
+                m = Arrays.size(grid)
+                n = Arrays.size(grid[0])
+                cache = 
+                    List.duplicate(0, n)
+                    |> Arrays.new
+                    |> List.duplicate(m)
+                    |> Arrays.new
+
+                0..(m-1)//1
+                |> Enum.reduce(0, fn(x, res) ->
+                    0..(n-1)//1
+                    |> Enum.reduce(res, fn(y, res) -> max(res, dfs(grid, cache, x, y)) end)
+                end)
+        end
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+grid = Arrays.new([
+    Arrays.new([2,9,6]),
+    Arrays.new([8,4,7]),
+    Arrays.new([5,3,1])
+])
+IO.puts "Maximum Routers are #{Routers.maximum_routers(grid)}"

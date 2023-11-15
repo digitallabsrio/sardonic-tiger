@@ -1,0 +1,91 @@
+defmodule TreeNode do
+  defstruct val: nil, children: Arrays.new([])
+  def init(val), do: %TreeNode{val: val}
+end
+
+defmodule DOMStructure do
+  def lowest_common_ancestor(root, a, b) do
+    stack = Arrays.new([])
+    stack = stack |> Arrays.append(root)
+    parent = %{root: nil}
+
+    parent = saving_parent_pointers(stack, parent, a, b)
+    ancestors = MapSet.new()
+
+    ancestors = finding_ancestors(a, parent, ancestors)
+
+    # The first ancestor of b which appears in
+    # a's ancestor set() is their lowest common ancestor.
+    lca_from_b_ancestor(b, parent, ancestors)
+  end
+
+  defp saving_parent_pointers(stack, parent, a, b) do
+    cond do
+      !Map.has_key?(parent, a) or !Map.has_key?(parent, b) ->
+        {:ok, {node, stack}} = stack |> Arrays.extract
+
+        # Save the parent pointers while iterating
+        {parent, stack} = 
+          node.children
+          |> Enum.reduce({parent, stack}, fn(child, {parent, stack}) ->
+            parent = Map.put(parent, child, node)
+            stack = stack |> Arrays.append(child)
+            {parent, stack}
+          end)
+
+        saving_parent_pointers(stack, parent, a, b)
+      true -> parent
+    end
+  end
+
+  defp finding_ancestors(nil, _parent, ancestors), do: ancestors
+  defp finding_ancestors(a, parent, ancestors) do
+    ancestors = MapSet.put(ancestors, a)
+    a = parent[a]
+    finding_ancestors(a, parent, ancestors)
+  end
+
+  defp lca_from_b_ancestor(b, parent, ancestors) do
+    cond do
+      !MapSet.member?(ancestors, b) ->
+        b = parent[b]
+        lca_from_b_ancestor(b, parent, ancestors)
+      true -> b.val
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+root = TreeNode.init(1)
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(2)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(3)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(4)))
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(5))
+root = put_in(root.children[0].children, value)
+i_value = root.children[0].children[0].children |> Arrays.append(TreeNode.init(10))
+root = put_in(root.children[0].children[0].children, i_value)
+value = root.children[0].children |> Arrays.append(TreeNode.init(6))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(11))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(12))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(13))
+root = put_in(root.children[0].children[1].children, i_value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(7))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init(8))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init(9))
+root = put_in(root.children[2].children, value)
+
+a = root.children[0].children[1].children[2]
+b = root.children[0].children[0].children[0]
+lca = DOMStructure.lowest_common_ancestor(root, a, b)
+IO.puts "\"#{lca}\" is the lowest common ancestor of the nodes: \"#{a.val}\" and \"#{b.val}\""

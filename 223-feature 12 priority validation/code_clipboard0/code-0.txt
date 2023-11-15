@@ -1,0 +1,43 @@
+defmodule Solution do
+  def update_map(map, p, k) do
+    k-1..k+1
+    |> Enum.reduce(map, fn(increment, map) -> 
+      cond do
+        increment > 0 and Map.has_key?(map, p + increment) ->
+          Map.put(map, p + increment, MapSet.put(map[p+increment], increment))
+        true -> map
+      end
+    end)
+  end
+
+  def valid_sequence(priorities) do
+    map = %{}
+
+    map = 
+      priorities 
+      |> Enum.reduce(map, fn(p, map) ->
+        Map.put(map, p, MapSet.new())
+      end)    
+
+    map = Map.put(map, 0, MapSet.new([0]))
+
+    map = 
+      priorities 
+      |> Enum.reduce(map, fn(p, map) ->
+        map[p] 
+        |> MapSet.to_list 
+        |> Enum.reduce(map, fn(k, map) ->
+          update_map(map, p, k)
+        end)
+      end) 
+
+    priority_index = Enum.at(priorities, length(priorities) - 1)
+    MapSet.size(map[priority_index]) > 0
+  end
+end
+    
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+IO.inspect Solution.valid_sequence([0,1,3,5,8,12,17])

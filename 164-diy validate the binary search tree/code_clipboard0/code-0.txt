@@ -1,0 +1,5 @@
+defmodule Solution do
+  def inorder_BST(_array, _n) do
+    # Write your code here
+  end
+end

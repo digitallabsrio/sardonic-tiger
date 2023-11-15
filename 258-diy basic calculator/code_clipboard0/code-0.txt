@@ -1,0 +1,6 @@
+defmodule Solution do
+  def calculator(_expression) do
+    # write code here
+    -1
+  end
+end

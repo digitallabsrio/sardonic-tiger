@@ -1,0 +1,5 @@
+defmodule Solution do
+  def num_matching_subseq(_s, _words) do
+    # write your code here
+  end
+end

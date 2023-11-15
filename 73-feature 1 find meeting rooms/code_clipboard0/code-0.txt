@@ -1,0 +1,26 @@
+defmodule Meetings do
+  def min_meeting_rooms(meeting_times) when meeting_times == nil, do: 0
+  def min_meeting_rooms(meeting_times) do
+    free_rooms = []
+
+    meeting_times = Arrays.new(Enum.sort_by(meeting_times, & &1)) 
+    [_, meeting_val] = meeting_times[0]
+    free_rooms = free_rooms |> Enum.into(Heap.min()) |> Heap.push(meeting_val)
+
+    Arrays.slice(meeting_times, 1..Arrays.size(meeting_times))
+    |> Enum.reduce(free_rooms, fn([i_zero, i_one], free_rooms) ->
+      if Heap.root(free_rooms) <= i_zero do
+        free_rooms |> Heap.pop |> Heap.push(i_one)
+      else
+        free_rooms |> Heap.push(i_one)
+      end
+    end)
+    |> Heap.size
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+meeting_times = [[2, 8], [3, 4], [3, 9], [5, 11], [8, 20], [11, 15]]
+IO.inspect(Meetings.min_meeting_rooms(meeting_times), charlists: :as_lists) # [11, 15, 20]

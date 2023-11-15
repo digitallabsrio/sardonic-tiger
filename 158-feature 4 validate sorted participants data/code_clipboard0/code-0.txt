@@ -1,0 +1,25 @@
+defmodule Solution do
+    # Return true if array has one or no element
+    def validate_data(_arr, n) when n == 0 or n == 1, do: true
+    def validate_data(arr, n) do
+        # Found the unsorted pair
+        1..n-1
+        |> Enum.reduce_while(true, fn(i, res) ->
+            # If it simply returns true, then no unsorted pair found
+            if arr[i - 1] > arr[i], do: {:halt, false}, else: {:cont, res}
+        end)
+    end
+end 
+     
+# Drivers code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+arr = Arrays.new(["Caryl", "Elia", "Elvira", "Jeanette", "Lala", "Latasha", "Lyn"])
+n = Arrays.size(arr)
+
+if Solution.validate_data(arr, n) do
+    IO.puts "Valid Data"
+else
+    IO.puts "Not Valid Data"
+end

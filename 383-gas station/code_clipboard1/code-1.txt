@@ -1,0 +1,38 @@
+defmodule Solution do
+  def can_complete_circuit(gas, cost) do
+    n = Arrays.size(gas)
+
+    # Initiate the required variables.
+    total_tank = curr_tank = starting_station = 0
+
+    # Iterate over all the stations 
+    {total_tank, starting_station} = 
+      0..n-1 
+      |> Enum.reduce({total_tank, starting_station}, fn(i, {total_tank, starting_station}) ->
+        total_tank = total_tank + gas[i] - cost[i]
+        curr_tank = curr_tank + gas[i] - cost[i]
+
+        # If we cannot reach the current station
+        # Make the next station as a new starting point and reset the tank to 
+        # start with an empty tank.
+        if curr_tank < 0, do: {total_tank, i+1}, else: {total_tank, starting_station}
+      end)
+
+    if total_tank >= 0, do: starting_station, else: -1
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+gas = Arrays.new([1,2,3,4,5])
+cost = Arrays.new([3,4,5,1,2])
+
+index = Solution.can_complete_circuit(gas, cost)
+cond do
+  index == -1 ->
+    IO.puts "Output: #{index}"
+    IO.puts "We cannot make the round trip once, no matter where you start."
+  true -> IO.puts "Starting gas station's index is #{index}."
+end

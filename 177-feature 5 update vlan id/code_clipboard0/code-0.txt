@@ -1,0 +1,48 @@
+defmodule VLAN do
+  def update_vlan(matrix, r, c, new_id) do
+    cap_R = Arrays.size(matrix)
+    cap_C = Arrays.size(matrix[0])
+    curr_id = (matrix[r])[c]
+
+    if curr_id == new_id, do: matrix, else: dfs(matrix, curr_id, new_id, cap_R, cap_C, r, c)
+  end
+
+  def dfs(matrix, curr_id, new_id, cap_R, cap_C, r, c) do
+    cond do
+      # Check bounds of the matrix and check if ID has already been changed or not
+      r >= 0 and c >= 0 and r < cap_R and c < cap_C and (matrix[r])[c] == curr_id ->
+        # Assign new ID
+        matrix = Arrays.replace(matrix, r, Arrays.replace(matrix[r], c, new_id))
+        
+        # Up
+        matrix = dfs(matrix, curr_id, new_id, cap_R, cap_C, r-1, c)
+        # Down
+        matrix = dfs(matrix, curr_id, new_id, cap_R, cap_C, r+1, c)
+        # Left
+        matrix = dfs(matrix, curr_id, new_id, cap_R, cap_C, r, c-1)
+        # Right
+        dfs(matrix, curr_id, new_id, cap_R, cap_C, r, c+1)
+
+      true -> matrix
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+matrix = Arrays.new([
+  Arrays.new([1,1,1,1,1]),
+  Arrays.new([1,1,1,1,0]),
+  Arrays.new([1,1,1,0,0]),
+  Arrays.new([1,1,0,1,0]),
+  Arrays.new([1,1,0,0,1])
+])
+
+r = 1
+c = 1 
+new_id = 2
+
+IO.puts "Swtches with Updated VLAN IDs: "
+IO.inspect VLAN.update_vlan(matrix, r, c, new_id) |> Helper.convert

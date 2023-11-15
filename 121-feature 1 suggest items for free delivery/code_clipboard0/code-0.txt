@@ -1,0 +1,24 @@
+defmodule Delivery do
+  def suggest_two_products(item_prices, amount) do
+    buff_dict = %{}
+    
+    item_prices
+    |> Enum.with_index()
+    |> Enum.reduce_while({buff_dict, []}, fn({price, i}, {buff_dict, res}) ->
+      remaining = amount - price
+      cond do
+        Map.has_key?(buff_dict, remaining) -> {:halt, {buff_dict, [buff_dict[remaining], i]}}
+        true -> {:cont, {Map.put(buff_dict, price, i), res}}
+      end
+    end)
+    |> elem(1)
+  end
+end
+
+## Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+item_prices = [2, 30, 56, 34, 55, 10, 11, 20, 15, 60, 45, 39, 51]
+amount = 61
+IO.inspect Delivery.suggest_two_products(item_prices, amount)

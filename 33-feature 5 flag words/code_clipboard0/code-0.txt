@@ -1,0 +1,60 @@
+defmodule Words do
+  def repeated_letters(s, ind) do
+    temp = ind
+    repeated_letters(s, ind, temp)
+  end
+
+  def repeated_letters(s, ind, temp) do
+    cond do
+      (temp < byte_size(s)) and (String.at(s, temp) == String.at(s, ind)) -> repeated_letters(s, ind, temp+1)
+      true -> temp - ind
+    end
+  end 
+
+  def flag_words(s, w) when byte_size(s) <= 0 or byte_size(w) <= 0, do: false
+  def flag_words(s, w) do
+    flag_words(s, w, 0, 0)
+  end
+
+  def check(len1, len2) when (len1 < 3 and len1 != len2) or (len1 >= 3 and len1 < len2), do: false
+  def check(_len1, _len2), do: true
+
+  def flag_words(s, w, i, j) when i >= byte_size(s) and j >= byte_size(w), do: (i == byte_size(s) and j == byte_size(w))
+  def flag_words(s, w, i, j) do
+    cond do
+      String.at(s, i) == String.at(w, j) ->
+        len1 = repeated_letters(s, i)
+        len2 = repeated_letters(w, j)
+        if check(len1, len2) == false, do: false, else: flag_words(s, w, i+len1, j+len2)
+      true -> false
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+IO.puts "\nEXAMPLE 1"
+s = "mooooronnn" # modified word
+w = "moron" # original word
+
+if Words.flag_words(s, w) do
+  IO.puts "Word Flagged"
+  IO.puts "The word \"#{s}\" is a possible morph of \"#{w}\""
+else
+  IO.puts "Word Safe"
+end
+
+# Example 2
+IO.puts "\nEXAMPLE 2"
+s = "mooooronnn" # modified word
+w = "moroning" # original word
+
+if Words.flag_words(s, w) do
+  IO.puts "Word Flagged"
+  IO.puts "The word \"#{s}\" is a possible morph of \"#{w}\""
+else
+  IO.puts "Word Safe"
+end

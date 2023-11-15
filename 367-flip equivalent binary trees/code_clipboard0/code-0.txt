@@ -1,0 +1,5 @@
+defmodule Solution do
+  def flip_equiv(_root1, _root2) do
+    # write your code here
+  end
+end

@@ -1,0 +1,10 @@
+defmodule MyCalendar do
+  def init do
+    # Write your code here
+  end
+
+  def book(obj, _start, _end_var) do
+    # Write your code here
+    {obj, nil}
+  end
+end

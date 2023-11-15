@@ -1,0 +1,20 @@
+defmodule RandomSet do
+  def init do
+    #  Initialize your data structure here
+  end
+
+  def insert(obj, _data) do
+    #  Inserts a value to the set. Returns true if the set did not already contain the specified element.
+    {obj, nil}
+  end
+
+  def remove(obj, _data) do
+    #  Removes a value from the set. Returns true if the set contained the specified element.
+    {obj, nil}
+  end
+
+  def getRandomData(_obj) do
+    # Get a random element from the set.
+    -1
+  end
+end

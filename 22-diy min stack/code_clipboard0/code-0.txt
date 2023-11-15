@@ -1,0 +1,33 @@
+# Create Stack => stack = myStack(5); where 5 is size of stack
+# Create Queue => queue = myQueue(5); where 5 is size of queue
+# Stack Functions => isEmpty(), isFull(), top()
+# Queue Functions => enqueue(int),dequeue(),isEmpty(),getSize()
+
+defmodule MinStack do
+    # Constructor
+    def init do 
+        # Write your code here
+        # Removes and return value from newStack
+        nil
+    end
+
+    # Removes and returns value from max_stack
+    def pop(_obj) do
+        # Write your code here
+        nil
+    end
+
+    # Pushes values into new_stack
+    def push(_obj, _value) do
+        # Write your code here
+        nil
+    end
+
+    # Returns minimum value from newStack in O(1) Time
+    def min(_obj) do
+        # Write your code here
+        -1
+    end
+
+    # Write any helper functions here
+end

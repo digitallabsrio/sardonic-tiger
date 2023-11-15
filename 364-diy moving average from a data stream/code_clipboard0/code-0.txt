@@ -1,0 +1,12 @@
+defmodule MovingAverage do
+  defstruct []
+
+  def init(size) do 
+    # Write your code here
+  end
+
+  def find_moving_average(obj, _val) do
+    # Write your code here
+    {0.0, obj}
+  end
+end

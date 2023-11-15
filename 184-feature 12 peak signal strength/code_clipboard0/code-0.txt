@@ -1,0 +1,40 @@
+defmodule Solution do
+  def binary_search(nums, l, r) do
+    cond do
+      l < r ->
+        mid = div(l + r, 2)
+
+        if nums[mid] > nums[mid + 1], do: binary_search(nums, l, mid), else: binary_search(nums, mid + 1, r)
+
+      true -> l
+    end
+  end
+
+  def peak_signal_strength(nums) do
+    l = 0
+    r = Arrays.size(nums) - 1
+
+    nums
+    |> binary_search(l, r)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example - 1
+nums = Arrays.new([1, 2, 3, 4, 5])
+IO.puts "The peak element is at index: #{Solution.peak_signal_strength(nums)}"
+
+# Example - 2
+nums = Arrays.new([5, 4, 3, 2, 1])
+IO.puts "The peak element is at index: #{Solution.peak_signal_strength(nums)}"
+
+# Example - 3
+nums = Arrays.new([2, 3, 4, 5, 1])
+IO.puts "The peak element is at index: #{Solution.peak_signal_strength(nums)}"
+
+# Example - 4 (Multiple Peaks)
+nums = Arrays.new([1, 2, 4, 3, 6, 5, 10, 19, 8, 17])
+IO.puts "The peak element is at index: #{Solution.peak_signal_strength(nums)}"

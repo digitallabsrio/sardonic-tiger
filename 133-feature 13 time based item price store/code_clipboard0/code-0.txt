@@ -1,0 +1,144 @@
+defmodule TimeMap do
+    use Bitwise
+    # TimeMap data structure
+    defstruct prices: %{}, timestamp: %{}
+
+    # TimeMap constructor
+    def init, do: %__MODULE__{}
+
+    # Set TimeMap data variables
+    def set(obj, item, price, timestamp) do
+        cond do
+        # Check if the given Item already exists in the data structure
+        Map.has_key?(obj.prices, item) ->
+            cond do
+                # Check if the given Timestamp is in increasing order
+                timestamp < (obj.timestamp[item])[-1] ->
+                    IO.puts "TimeStamp expected to have value from #{(obj.timestamp[item])[-1]} to 10000000 only."
+                    obj
+
+                # Check if the given Price of an Item already exists in the data structure
+                price != (obj.prices[item])[-1] ->
+                    # Store Prices for the given Item in the data structure
+                    stored_price = Map.put(obj.prices, item, obj.prices[item] |> Arrays.append(price))
+
+                    # Store Timestamp for the given Item in the data structure
+                    stored_timestamp = Map.put(obj.timestamp, item, obj.timestamp[item] |> Arrays.append(timestamp))
+                    %__MODULE__{obj | prices: stored_price, timestamp: stored_timestamp}
+
+                true -> obj
+            end
+
+        true ->
+            # Store Prices for the given Item in the data structure
+            obj_prices = Map.get(obj.prices, item, Arrays.new([]))
+            stored_price = Map.put(obj.prices, item, obj_prices |> Arrays.append(price))
+
+            # Store Timestamp for the given Item in the data structure
+            obj_stamp = Map.get(obj.timestamp, item, Arrays.new())
+            stored_timestamp = Map.put(obj.timestamp, item, obj_stamp |> Arrays.append(timestamp))
+            %__MODULE__{obj | prices: stored_price, timestamp: stored_timestamp}
+        end
+    end
+
+    def criteria(obj, index, item, timestamp), do: (obj.timestamp[item])[index] > timestamp
+    def search(obj, i, j, item, timestamp) do
+        cond do
+            i < j -> 
+                h = (i + j) >>> 1
+                cond do
+                    # i ≤ h < j
+                    criteria(obj, h, item, timestamp) == false -> 
+                        # preserves f(i-1) == false
+                        search(obj, h+1, j, item, timestamp)
+
+                    # preserves f(j) == true
+                    true -> search(obj, i, h, item, timestamp)
+                end
+            true -> i
+        end
+    end
+    def search(obj, n, item, timestamp), do: search(obj, 0, n, item, timestamp)
+
+    # Get TimeMap data variables
+    def get(obj, item, timestamp) do
+        cond do
+            # Check if the given Item already exists in the data structure
+            Map.has_key?(obj.prices, item) -> 
+                # Find the right most occurence of the given Timestamp
+                index = search(obj, Arrays.size(obj.timestamp[item]), item, timestamp)-1
+                # If the Timestamp exist in a data structure return the Price with that Timestamp.
+                # Return empty string if the Timestamp does not exists
+                if index > -1, do: (obj.prices[item])[index], else: ""
+            true -> "" # Return empty string if Item does not exist
+        end
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+# Example #1
+IO.puts "Example #1"
+map = TimeMap.init
+
+# Set price
+IO.puts "SAVE: Item = Sun Glasses; Price = $20; TimeStamp = 3"
+# Set
+map = map |> TimeMap.set("Sun Glasses", "$20", 3)
+# Get
+IO.puts "\nGET: Item = Sun Glasses; TimeStamp = 3"
+output = map |> TimeMap.get("Sun Glasses", 3)
+IO.puts "GOT: The price of Sun Glasses is: #{output}\n"
+
+# Get
+IO.puts "GET: Item = Sun Glasses; TimeStamp = 1"
+output = map |> TimeMap.get("Sun Glasses", 1)
+IO.puts "GOT: The price of Sun Glasses is: #{output}\n"
+
+IO.puts "SAVE: Item = Sun Glasses; Price = $15, TimeStamp = 4"
+# Set
+map = map |> TimeMap.set("Sun Glasses", "$15", 4)
+
+# Get
+IO.puts "\nGET: Item = Sun Glasses; TimeStamp = 8"
+output = map |> TimeMap.get("Sun Glasses", 8)
+IO.puts "GOT: The price of Sun Glasses is: #{output}\n"
+
+# Get
+IO.puts "GET: Item = Sun Glasses; TimeStamp = 4"
+output = map |> TimeMap.get("Sun Glasses", 4)
+IO.puts "GOT: The price of Sun Glasses is: #{output}\n"
+
+# Example #2
+IO.puts "Example #2"
+map1 = TimeMap.init
+
+# Set price
+IO.puts "SAVE: Item = Watch; Price = $30; TimeStamp = 5"
+# Set
+map1 = map1 |> TimeMap.set("Watch", "$30", 5)
+# Get
+IO.puts "\nGET: Item = Watch; TimeStamp = 1"
+output = map1 |> TimeMap.get("Watch", 1)
+IO.puts "GOT: The price of Watch is: #{output}\n"
+
+# Get
+IO.puts "GET: Item = Watch; TimeStamp = 5"
+output = map1 |> TimeMap.get("Watch", 5)
+IO.puts "GOT: The price of Watch is: #{output}\n"
+
+# Set
+IO.puts "SAVE: Item = Watch; Price = $25 ; TimeStamp = 2"
+map1 = map1 |> TimeMap.set("Watch", "$25", 2)
+
+# Get
+IO.puts "\nGET: Item = Watch; TimeStamp = 5"
+output = map1 |> TimeMap.get("Watch", 5)
+IO.puts "GOT: The price of Watch is: #{output}\n"
+
+# Get
+IO.puts "GET: Item = Watch; TimeStamp = 3"
+output = map1 |> TimeMap.get("Watch", 3)
+IO.puts "GOT: The price of Watch is: #{output}"

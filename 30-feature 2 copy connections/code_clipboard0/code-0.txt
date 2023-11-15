@@ -1,0 +1,35 @@
+defmodule Connections do
+  def clone_rec(nil, _nodes_completed), do: nil
+  def clone_rec(root, nodes_completed) do
+    new_node = CloneNode.init(root.data)
+    nodes_completed = Map.put(nodes_completed, root, new_node)
+
+    root.friends
+    |> Enum.reduce(new_node, fn(p, new_node) ->
+      x = Map.get(nodes_completed, p)
+      cond do
+        x == nil -> 
+          value = clone_rec(p, nodes_completed)
+          %CloneNode{new_node | friends: new_node.friends |> Arrays.append(value)}
+        true -> 
+          %CloneNode{new_node | friends: new_node.friends |> Arrays.append(x)}
+      end
+    end)
+  end
+
+  def clone(root) do
+    nodes_completed = %{}
+    clone_rec(root, nodes_completed)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+vertices = CloneGraph.create_test_graph_directed(7, 18)
+CloneGraph.print_graph(vertices[0])
+cp = Connections.clone(vertices[0])
+
+IO.puts "\nAfter copy."
+IO.inspect CloneGraph.print_graph(cp)

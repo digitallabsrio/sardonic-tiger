@@ -1,0 +1,47 @@
+defmodule Messages do 
+  def get_update_diff(diff, val), do: diff + val
+  def get_diff(diff) when diff < 0, do: get_update_diff(diff, 26)
+  def get_diff(diff), do: diff
+  
+  def generate_key(message) do
+    # Function to generate keys
+    1..(byte_size(message)-1)//1
+    |> Enum.reduce("", fn(i, key) ->
+      # Compute difference of adjacent characters
+      {index_i, _} = :binary.match("abcdefghijklmnopqrstuvwxyz", String.at(message, i))
+      {index_i1, _} = :binary.match("abcdefghijklmnopqrstuvwxyz", String.at(message, i-1))
+      diff = index_i - index_i1
+
+      # Handle the wrap around case
+      diff = get_diff(diff)
+
+      # Construct the key string
+      key <> Integer.to_string(diff) <> ", "
+    end)
+  end
+
+  def combine_messages(messages) do
+    messages
+    |> Enum.reduce(%{}, fn(value, message_group) ->
+      message_key = generate_key(value)
+
+      if Map.has_key?(message_group, message_key) do
+        # Assign message to existing key
+        Map.update(message_group, message_key, [value], fn new_val -> new_val ++ [value] end)
+      else
+        # Add key and assign message to it
+        Map.put(message_group, message_key, [value])
+      end
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+messages = ["lmn", "mno", "azb", "bac", "yza", "bdfg"]
+groups = Messages.combine_messages(messages)
+IO.puts "The Grouped Messages are:\n"
+groups
+|> Enum.each(fn {_, group} -> IO.inspect group end)

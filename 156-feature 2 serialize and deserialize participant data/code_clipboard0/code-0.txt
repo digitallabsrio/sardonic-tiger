@@ -1,0 +1,64 @@
+defmodule Translator do
+    def pre_order(nil, res), do: res
+    def pre_order(node, res) do
+        middle = [node.val <> "," | res]
+        left_side = pre_order(node.left_child, middle)
+        pre_order(node.right_child, left_side)
+    end
+
+    @doc """
+        Encodes a tree to a single string.    
+        :type root: Node
+        :rtype: str
+    """
+    def serialize(root) do            
+        res = []
+        pre_order(root, res) 
+        |> :lists.reverse 
+        |> Enum.join("") 
+    end
+
+    @doc """
+        Decodes your encoded data to tree.
+        :type data: str
+        :rtype: Node
+    """
+    def deserialize(data) do
+        lst = 
+            String.split(data, ",") 
+            |> :lists.reverse 
+            |> tl 
+            |> :lists.reverse 
+
+        root = nil
+        lst 
+        |> Enum.reduce(root, fn (n, root) ->
+            if !root, do: BST.Node.init(n), else: root |> BST.Node.insert(n)
+        end)
+    end
+end
+
+# Driver code
+defmodule Main do
+   def main do
+      IO.puts "-----------------------------"
+      IO.puts "PROGRAM OUTPUT:\n"
+
+      bst = BinarySearchTree.init
+      names = ["Jeanette", "Elia", "Albert", "Latasha", "Elvira", "Kandice", "Maggie"]
+
+      bst = names |> Enum.reduce(bst, fn name, acc -> 
+         BinarySearchTree.insert(acc, name)
+      end)
+
+      IO.puts "Original BST:"
+      IO.inspect Helper.print_tree(bst.root)
+
+      string = Translator.serialize(bst.root)
+      IO.puts "\nSerialized: #{string}"
+
+      deserialized = Translator.deserialize(string)
+      IO.puts "\nDeserialized:" 
+      IO.inspect Helper.print_tree(deserialized)
+   end
+end

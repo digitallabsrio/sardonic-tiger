@@ -1,0 +1,78 @@
+defmodule FileSystem do
+    defstruct root: TrieNode.init, can_find: false
+    def init, do: %__MODULE__{}
+
+    def get_all(obj) do
+      names = Arrays.new([])
+      if obj.root == nil, do: [], else: dfs(obj.root, "", names) |> Arrays.to_list
+    end
+
+    def dfs(nil, _word, names), do: names
+    def dfs(node, word, names) do
+      names = if node.complete == true, do: Arrays.append(names, word), else: names
+      ?a..?z
+      |> Enum.to_list
+      |> Enum.reduce(names, fn(j, names) -> 
+        n = word <> <<j>>
+        dfs(node.nodes[<<j>>], n, names)
+      end)
+    end
+
+    defp node_creater_getter(curr_node, key) do
+      curr_node.nodes 
+      |> Map.put_new(key, TrieNode.init) 
+      |> Map.get(key)
+    end
+
+    def add(curr_node, [], _i, _n), do: %TrieNode{curr_node | complete: true}
+    def add(curr_node, [head | tail], i, n) do
+      child = node_creater_getter(curr_node, head)
+      child = add(child, tail, i+1, n)
+      %TrieNode{curr_node | nodes: Map.put(curr_node.nodes, head, child)}
+    end
+
+    def add(obj, word) do
+      curr_node = obj.root
+      n = byte_size(word)
+      word_list = word |> String.graphemes
+      %__MODULE__{obj | root: add(curr_node, word_list, 0, n)}
+    end
+
+    defp depth_first_search([], node), do: node.complete
+    defp depth_first_search([first | tail], node) do
+      cond do
+        String.equivalent?(first, ".") ->
+          node.nodes 
+          |> Enum.any?(fn {_, v} -> depth_first_search(tail, v) end)
+        true ->
+          if !Map.has_key?(node.nodes, first), do: false, else: depth_first_search(tail, node.nodes[first])
+      end
+    end
+
+    def search(obj, word) do
+      node = obj.root
+      word |> String.graphemes |> depth_first_search(node)
+    end
+end
+
+# FileSystem()
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+IO.puts "Initializing object"
+obj = FileSystem.init
+IO.puts "add_wording \'dir\' as a directory"
+obj = obj |> FileSystem.add("dir")
+IO.puts "add_wording \'dir\' as a directory again"
+obj = obj |> FileSystem.add("dir")
+IO.puts "add_wording \'dirr\' as a directory"
+obj = obj |> FileSystem.add("dirr")
+IO.puts "add_wording \'file\' as a directory"
+obj = obj |> FileSystem.add("file")
+# IO.inspect obj
+IO.puts "Searching if \'.ile\' exists"
+IO.inspect obj |> FileSystem.search(".ile")
+IO.puts "Searching if \'..ile\' exists"
+IO.inspect obj |> FileSystem.search("..ile")
+IO.puts "Getting all of the files\\directories:"
+IO.inspect obj |> FileSystem.get_all()

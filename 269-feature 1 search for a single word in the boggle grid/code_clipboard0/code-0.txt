@@ -1,0 +1,61 @@
+defmodule BoggleGrid do
+  def exists(grid, word) do
+    0..4 
+    |> Enum.reduce_while(false, fn(row, res) ->
+      res = exists(grid, word, row, res)
+      if res == true, do: {:halt, true}, else: {:cont, res}
+    end)
+  end
+
+  def exists(grid, word, row, res) do
+    0..4 
+    |> Enum.reduce_while(res, fn(col, res) ->
+      if dfs(row, col, word, grid) == true, do: {:halt, true}, else: {:cont, res}
+    end)
+  end
+
+  # base case
+  def dfs(_row, _col, suffix, _grid) when byte_size(suffix) == 0, do: true
+  def dfs(row, col, suffix, grid) do
+    cond do
+      # check if this is a valid cell
+      row < 0 or row == 5 or col < 0 or col == 5 or (grid[row])[col] != String.at(suffix, 0) ->
+        false
+
+      true ->
+        ret = false
+        # mark the cell as visited
+        new_grid = Arrays.replace(grid, row, Arrays.replace(grid[row], col, "#"))
+
+        # explore the four neighboring directions
+        [{0, 1}, {1, 0}, {0, -1}, {-1, 0}] 
+        |> Enum.reduce_while(ret, fn({row_offset, col_offset}, ret) ->
+          suffix_slice = String.slice(suffix, 1..byte_size(suffix)-1)
+          dfs_ret = dfs(row + row_offset, col + col_offset, suffix_slice, new_grid)
+          
+          # break instead of return directly to do some cleanup afterwards
+          if dfs_ret, do: {:halt, dfs_ret}, else: {:cont, ret}
+        end)
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+grid = Arrays.new([
+  Arrays.new(["C", "S", "L", "I", "M"]), 
+  Arrays.new(["O", "I", "L", "M", "O"]), 
+  Arrays.new(["O", "L", "I", "E", "O"]), 
+  Arrays.new(["R", "T", "A", "S", "N"]), 
+  Arrays.new(["S", "I", "T", "A", "C"])
+])
+
+# Example 1
+word = "COIL"
+IO.inspect BoggleGrid.exists(grid, word)
+
+# Example 2
+word = "COCOON"
+IO.inspect BoggleGrid.exists(grid, word)

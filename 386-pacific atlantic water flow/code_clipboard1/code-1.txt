@@ -1,0 +1,131 @@
+defmodule Solution do
+  alias Okasaki.Queue, as: Queue
+
+  def bfs(queue, heights, reachable, directions, num_rows, num_cols) do
+    cond do
+      Queue.size(queue) > 0 ->
+        {:ok, {{cell_zero, cell_one}, queue}} = Queue.remove(queue)
+        # This cell is reachable, so mark it
+        inner_arr = Arrays.new(reachable[cell_zero])
+        reachable = Arrays.replace(reachable, cell_zero, Arrays.replace(inner_arr, cell_one, true))
+
+        #  Check all 4 directions
+        {queue, reachable} = 
+          directions |> Enum.reduce({queue, reachable}, fn([dir_zero, dir_one], {queue, reachable}) ->
+            new_row = cell_zero + dir_zero
+            new_col = cell_one + dir_one
+
+            # Check if new cell is within bounds
+            cond do
+              new_row < 0 or new_row >= num_rows or new_col < 0 or new_col >= num_cols ->
+                {queue, reachable}
+              
+              # Check that the new cell hasn t already been visited
+              Arrays.new(reachable[new_row])[new_col] == true -> {queue, reachable}
+
+              # Check that the new cell has a higher or equal height,
+              # So that water can flow from the new cell to the old cell
+              Arrays.new(heights[new_row])[new_col] < Arrays.new(heights[cell_zero])[cell_one] -> 
+                {queue, reachable}
+
+              # If we ve gotten this far, that means the new cell is reachable
+              true -> {Queue.insert(queue, {new_row, new_col}), reachable}
+            end
+          end)
+
+        bfs(queue, heights, reachable, directions, num_rows, num_cols)
+
+      true -> {queue, reachable}
+    end
+  end
+
+  def bfs(queue, heights) do
+    num_rows = Arrays.size(heights)
+    num_cols = length(heights[0])
+
+    reachable = 
+      List.duplicate(false, num_cols) 
+      |> List.duplicate(num_rows)
+      |> Arrays.new
+    directions = [[0, 1], [1, 0], [-1, 0], [0, -1]]
+
+    bfs(queue, heights, reachable, directions, num_rows, num_cols)
+  end
+
+  def pacific_atlantic(heights) do
+    cond do
+      # Check if input is empty
+      Arrays.size(heights) == 0 or length(heights[0]) == 0 -> []
+      true ->
+        # Save initial values to parameters
+        num_rows = Arrays.size(heights)
+        num_cols = length(heights[0])
+        queue = Queue.new()
+
+        # Setup each queue with cells adjacent to their respective ocean
+        queue = 
+          0..num_rows-1 
+          |> Enum.reduce(queue, fn(i, queue) ->
+            queue |> Queue.insert({i, 0})
+          end)
+
+        queue = 
+          0..num_cols-1 
+          |> Enum.reduce(queue, fn(i, queue) ->
+            queue |> Queue.insert({0, i})
+          end)
+
+        # Perform a BFS for each ocean to find all cells accessible by each ocean
+        {queue, pacific_reachable} = bfs(queue, heights)
+
+        # Setup each queue with cells adjacent to their respective ocean
+        queue = 
+          0..num_rows-1 
+          |> Enum.reduce(queue, fn(i, queue) ->
+            queue |> Queue.insert({i, num_cols-1})
+          end)
+
+        queue = 
+          0..num_cols-1 
+          |> Enum.reduce(queue, fn(i, queue) ->
+            queue |> Queue.insert({num_rows-1, i})
+          end)
+ 
+        {_, atlantic_reachable} = bfs(queue, heights)
+
+        # Find all cells that can reach both oceans
+        common_cells = []
+        0..num_rows-1 |> Enum.reduce(common_cells, fn(i, common_cells) ->
+          0..num_cols-1 |> Enum.reduce(common_cells, fn(j, common_cells) ->            
+
+            cond do
+              (pacific_reachable[i])[j] and (atlantic_reachable[i])[j] ->
+                [[i, j] | common_cells]
+              true -> common_cells
+            end
+
+          end)
+        end) 
+        |> :lists.reverse
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example - 1
+heights = Arrays.new([[2, 1], [1, 2]])
+output = Solution.pacific_atlantic(heights)
+IO.inspect output
+
+# Example - 2
+heights = Arrays.new([[1, 2, 3, 2, 6], [3, 2, 5, 4, 5], [1, 4, 6, 3, 2], [6, 7, 2, 4, 3], [5, 1, 1, 1, 4]])
+output = Solution.pacific_atlantic(heights)
+IO.inspect output
+
+# Example - 3
+heights = Arrays.new([[1, 3, 2], [2, 3, 2], [3, 2, 1]])
+output = Solution.pacific_atlantic(heights)
+IO.inspect output

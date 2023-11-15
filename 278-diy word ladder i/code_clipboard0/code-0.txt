@@ -1,0 +1,6 @@
+defmodule Solution do
+  def word_ladder(_starting_word, _ending_word, _word_list) do
+    # write your code here
+    -1
+  end
+end

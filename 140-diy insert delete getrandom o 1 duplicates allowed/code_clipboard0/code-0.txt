@@ -1,0 +1,20 @@
+defmodule RandomizedCollection do
+  def init do
+    # Initialize your data members here.
+  end
+
+  def insert(obj, _val) do
+    # Inserts a value to the set. Returns true if the set did not already contain the specified element.
+    {obj, false}
+  end
+
+  def remove(obj, _val) do
+    # Removes a value from the set. Returns true if the set contained the specified element.
+    {obj, false}
+  end
+
+  def get_random(_obj) do
+    # Write your code here
+    -1
+  end
+end

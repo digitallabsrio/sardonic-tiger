@@ -1,0 +1,47 @@
+defmodule UserSession do
+  def verify_session(push_op, pop_op) when length(push_op) != length(pop_op), do: false
+  def verify_session(push_op, pop_op) do
+    {stack, _} =
+      push_op
+      |> Enum.reduce({Arrays.new(), 0}, fn (pid, {stack, i}) ->
+          stack = stack |> Arrays.append(pid)
+          verify_session(stack, pop_op, i)
+      end)
+
+    if Arrays.size(stack) <= 0, do: true, else: false
+  end
+
+  defp verify_session(stack, pop_op, i) do
+    cond do
+      Arrays.size(stack) > 0 and stack[-1] == pop_op[i] ->
+        {:ok, {_, stack}} = stack |> Arrays.extract
+        verify_session(stack, pop_op, i+1)
+
+      true -> {stack, i}
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+push_op = [1,2,3,4,5]
+pop_op = Arrays.new([5,4,3,2,1])
+
+if UserSession.verify_session(push_op, pop_op) do
+    IO.puts("Session Successfull!")
+else
+    IO.puts("Session Faulty!")
+end
+
+# Example 2
+push_op = [7,6,9,3,2,1]
+pop_op = Arrays.new([6,2,3,1,7,9])
+
+if UserSession.verify_session(push_op, pop_op) do
+    IO.puts("Session Successfull!")
+else
+    IO.puts("Session Faulty!")
+end

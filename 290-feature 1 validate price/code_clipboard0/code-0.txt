@@ -1,0 +1,74 @@
+defmodule STATE do
+  def states(key) do
+    case key do
+      :start -> 0
+      :integer -> 1
+      :decimal -> 2
+      :unknown -> 3
+      :after_decimal -> 4
+    end
+  end
+
+  def get_next_state(current_state, ch) do
+    cond do
+      current_state == states(:start) or current_state == states(:integer) ->
+        cond do
+          ch == "." -> states(:decimal)
+          ch >= "0" and ch <= "9" -> states(:integer)
+          true -> states(:unknown)
+        end
+      
+      current_state == states(:decimal) ->
+        cond do
+          ch >= "0" and ch <= "9" -> states(:after_decimal)
+          true -> states(:unknown)
+        end
+
+      current_state == states(:after_decimal) ->
+        cond do
+          ch >= "0" and ch <= "9" -> states(:after_decimal)
+          true -> states(:unknown)
+        end
+
+      true -> states(:unknown)
+    end
+  end
+
+  def is_price_valid(s) when byte_size(s) == 0, do: true
+  def is_price_valid(s) do
+    i = 0
+    
+    cond do
+      String.at(s, i) == "+" or String.at(s, i) == "-" ->
+        i = i + 1
+        current_state = states(:start)
+        {current_state, result} =
+          String.slice(s, i, byte_size(s)-1)
+          |> String.graphemes
+          |> Enum.reduce({current_state, true}, fn(c, {current_state, result}) ->
+            current_state = get_next_state(current_state, c)
+            result = if current_state == states(:unknown), do: false, else: result
+            {current_state, result}
+          end) 
+
+        cond do
+          !result -> false
+          true -> if current_state == states(:decimal), do: false, else: true
+        end
+
+      true -> false
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+IO.puts "Is the price valid +40.325? #{STATE.is_price_valid("+40.325")}"
+IO.puts "Is the price valid -1.1.1? #{STATE.is_price_valid("-1.1.1")}"
+IO.puts "Is the price valid -222? #{STATE.is_price_valid("-222")}"
+IO.puts "Is the price valid ++22? #{STATE.is_price_valid("++22")}"
+IO.puts "Is the price valid 10.1? #{STATE.is_price_valid("10.1")}"
+IO.puts "Is the price valid +22.22.? #{STATE.is_price_valid("+22.22.")}"
+IO.puts "Is the price valid .100? #{STATE.is_price_valid(".100")}" 

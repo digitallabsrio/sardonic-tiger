@@ -1,0 +1,45 @@
+defmodule Region do
+    def determine_location(region, loss) do
+        cond do
+            Arrays.size(region) == 0 or Arrays.size(region[0]) == 0 -> false
+            true ->
+                height = Arrays.size(region)
+                width = Arrays.size(region[0])
+
+                row = height - 1
+                col = 0
+
+                get_row_col(region, loss, width, row, col)
+        end
+    end
+
+    defp get_row_col(region, loss, width, row, col) do
+        cond do
+            col < width and row >= 0 -> 
+                cond do
+                    (region[row])[col] > loss ->
+                        get_row_col(region, loss, width, row-1, col)
+
+                    (region[row])[col] < loss ->
+                        get_row_col(region, loss, width, row, col+1)
+
+                    true -> [row, col]
+                end
+            true -> [-1, -1]
+        end
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+region = Arrays.new([
+    Arrays.new([1,4,7,11,15]),
+    Arrays.new([2,5,8,12,19]),
+    Arrays.new([3,6,9,16,22]),
+    Arrays.new([10,13,14,17,24]),
+    Arrays.new([18,21,23,26,30])
+])
+loss = 5
+IO.puts "The coordinates of the loss value region are: #{inspect Region.determine_location(region, loss)}"

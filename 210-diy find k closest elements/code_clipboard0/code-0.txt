@@ -1,0 +1,5 @@
+defmodule Solution do
+  def find_closest_elements(_arr, _k, _num) do
+    # Write your code here
+  end
+end

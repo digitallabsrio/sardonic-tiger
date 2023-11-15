@@ -1,0 +1,5 @@
+defmodule Solution do
+  def right_side_view(_root) do
+    # write your code here
+  end
+end

@@ -1,0 +1,60 @@
+defmodule MaxStack do
+    defstruct max_stack: Stack.init, main_stack: Stack.init
+    # Constructor
+    def init, do: %__MODULE__{}
+
+    # Removes and returns value from max_stack
+    def pop(obj) do
+        {_, rest} = obj.max_stack |> Stack.pop
+        obj = %__MODULE__{obj | max_stack: rest}
+
+        {_, rest_main} = obj.main_stack |> Stack.pop
+        %__MODULE__{obj | main_stack: rest_main}
+    end
+
+    # Pushes values into max_stack
+    def push(obj, value) do
+        obj = %__MODULE__{obj | main_stack: obj.main_stack |> Stack.push(value)}
+        if Stack.is_empty(obj.max_stack) or Stack.top(obj.max_stack) < value do
+            %__MODULE__{obj | max_stack: obj.max_stack |> Stack.push(value)}
+        else
+            top = Stack.top(obj.max_stack)
+            %__MODULE__{obj | max_stack: obj.max_stack |> Stack.push(top)}
+        end
+    end
+
+    # Returns maximum value from newStack in O(1) Time
+    def max_rating(obj) do
+        cond do
+            Stack.is_empty(obj.max_stack) -> nil
+            true -> Stack.top(obj.max_stack)
+        end
+    end
+end
+
+# Driver Code
+defmodule Main do
+    def main do
+        IO.puts "-----------------------------"
+        IO.puts "PROGRAM OUTPUT:"
+
+        ratings = 
+            MaxStack.init        
+            |> MaxStack.push(5)
+            |> MaxStack.push(0)
+            |> MaxStack.push(2)
+            |> MaxStack.push(4)
+            |> MaxStack.push(6)
+            |> MaxStack.push(3)
+            |> MaxStack.push(10)
+        
+        IO.inspect ratings.main_stack.stack_list
+        IO.puts "Maximum Rating: #{MaxStack.max_rating(ratings)}"
+
+        ratings = ratings |> MaxStack.pop # Back button effect
+
+        IO.puts "\nAfter clicking back button\n"
+        IO.inspect ratings.main_stack.stack_list
+        IO.puts "Maximum value: #{MaxStack.max_rating(ratings)}"
+    end
+end

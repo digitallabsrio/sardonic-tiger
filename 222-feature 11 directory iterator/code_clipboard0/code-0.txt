@@ -1,0 +1,101 @@
+defmodule DirectoryIterator do
+  defstruct stack: []
+
+  # Constructor initializes a single file if a value has been passed
+  # else initializes an empty list
+  def init(nested_list) do
+    obj = %__MODULE__{}
+    %__MODULE__{obj | stack: nested_list |> :lists.reverse |> Arrays.new}
+  end
+
+  defp has_next(obj, top_list, i) do
+    cond do
+      i >= 0 ->
+        obj = %__MODULE__{obj | stack: obj.stack |> Arrays.append(top_list[i])}
+        has_next(obj, top_list, i-1)
+      true -> obj
+    end
+  end
+
+  def has_next(obj) do
+    cond do
+      Arrays.size(obj.stack) > 0 ->
+        top = obj.stack[-1]
+        
+        {res, obj} =
+          case NestedDirectories.is_file(top) do
+            false -> 
+              {:ok, {list, stack}} = Arrays.extract(obj.stack)
+              top_list = list |> NestedDirectories.get_list
+
+              i = length(top_list) - 1
+              obj = %__MODULE__{obj | stack: stack}
+              obj = has_next(obj, Arrays.new(top_list), i)
+
+              {false, obj}
+
+            _ -> {true, obj}
+          end
+
+        if res == true, do: {true, obj}, else: has_next(obj)
+
+      true -> {false, obj}
+    end
+  end
+
+  def next(obj) do
+    {res, obj} = DirectoryIterator.has_next(obj)
+
+    case res do
+      true -> 
+        {:ok, {file, stack}} = Arrays.extract(obj.stack)
+        obj = %__MODULE__{obj | stack: stack}
+        {file |> NestedDirectories.get_file, obj}
+
+      _ -> {nil, obj}
+    end
+  end
+end
+
+# Driver Code
+defmodule Main do
+  def itr_printer(itr) do
+    {res, itr} = DirectoryIterator.has_next(itr)
+
+    case res do
+      true -> 
+        IO.write("itr.next(): ")
+        {file, itr} = DirectoryIterator.next(itr)
+        IO.inspect file
+
+        itr_printer(itr)
+      _ -> :ok
+    end
+  end
+
+  def main do
+    # Driver Code
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    nested_list = []
+    l1 = NestedDirectories.init(nil)
+    nested_list = [NestedDirectories.init("F1") | nested_list]
+
+    l1 = l1 |> NestedDirectories.add(NestedDirectories.init("F2"))
+    l1 = l1 |> NestedDirectories.add(NestedDirectories.init("D1"))
+    l1 = %NestedDirectories{l1 | n_list: l1.n_list |> :lists.reverse}
+
+    nested_list = [l1 | nested_list] 
+    nested_list = [NestedDirectories.init("D2") | nested_list] |> :lists.reverse
+
+    itr = DirectoryIterator.init(nested_list)
+
+    IO.puts("Original structure: [F1, [F2, D1], D2]")
+    IO.puts("Output:")
+
+    itr |> itr_printer
+  end
+end
+
+Main.main

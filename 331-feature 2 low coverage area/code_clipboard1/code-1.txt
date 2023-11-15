@@ -1,0 +1,45 @@
+defmodule CoverageArea do
+    def low_coverage(matrix) when length(matrix) == 0, do: 0
+    def low_coverage(matrix) do
+        max_area = 0
+        dp = 
+            List.duplicate(0, length(hd(matrix)))
+            |> Arrays.new   
+
+        matrix
+        |> Enum.reduce({dp, max_area}, fn(mat, {dp, max_area}) ->
+            {dp, _} = 
+                mat
+                |> Enum.reduce({dp, 0}, fn(val, {dp, j}) ->
+                    cond do
+                        # update the state of this row's dp list using the last row's dp list
+                        # by keeping track of the number of consecutive ones
+                        val == "1" -> 
+                            dp = Arrays.replace(dp, j, dp[j] + 1)
+                            {dp, j+1}
+                        true -> 
+                            dp = Arrays.replace(dp, j, 0)
+                            {dp, j+1}
+                    end
+                end)
+
+            # update max_area with the maximum area from this row's dp list
+            max_area = max(max_area, Coverage.maximum_row_area(dp))
+            {dp, max_area}
+        end)
+        |> elem(1)
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+mall = [
+    ["1","0","0","1","1","1"],
+    ["1","0","1","1","0","1"],
+    ["0","1","1","1","1","1"],
+    ["0","0","1","1","1","1"]
+]
+
+IO.puts "Maximum Low coverage area is #{CoverageArea.low_coverage(mall)} units"

@@ -1,0 +1,62 @@
+defmodule Solution do
+  @files ["data", "dataaa", "data2"]
+
+  def find_files(p) do
+    result = []
+    @files 
+    |> Enum.reduce(result, fn(s, result) -> 
+      if is_match(s, p), do: [s | result], else: result
+    end) 
+    |> :lists.reverse
+  end
+
+  def is_match(s, p) do
+    m = byte_size(s)
+    n = byte_size(p)
+
+    dp = 
+      List.duplicate(false, n + 1)
+      |> Arrays.new
+      |> List.duplicate(m + 1)
+      |> Arrays.new
+    
+    dp = Arrays.replace(dp, 0, Arrays.replace(dp[0], 0, true))
+
+    dp = 
+      0..m |> Enum.reduce(dp, fn(i, dp) ->
+        s_index = i - 1
+
+        1..n |> Enum.reduce(dp, fn(j, dp) ->
+          p_index = j - 1
+
+          cond do
+            String.equivalent?(String.at(p, p_index), "*") ->
+
+              cond do
+                i > 0 and String.at(p, p_index-1) == String.at(s, s_index) or String.equivalent?(String.at(p, p_index-1), ".") ->
+                  res = (dp[i])[j-2] or (dp[i-1])[j]
+                  Arrays.replace(dp, i, Arrays.replace(dp[i], j, res))
+
+                true -> Arrays.replace(dp, i, Arrays.replace(dp[i], j, (dp[i])[j-2]))
+              end
+
+            i > 0 and String.equivalent?(String.at(p, p_index), ".") ->
+              Arrays.replace(dp, i, Arrays.replace(dp[i], j, (dp[i-1])[j-1]))
+
+            i > 0 and String.at(p, p_index) == String.at(s, p_index) ->
+              Arrays.replace(dp, i, Arrays.replace(dp[i], j, (dp[i-1])[j-1]))
+
+            true -> dp
+          end
+        end)
+      end)
+
+    (dp[m])[n]
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+IO.inspect Solution.find_files("data*")

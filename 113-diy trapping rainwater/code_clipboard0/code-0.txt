@@ -1,0 +1,6 @@
+defmodule Solution do
+  def trap_water(_elevation_map) do
+    # write your code here
+    -1
+  end
+end

@@ -1,0 +1,5 @@
+defmodule Solution do
+  def merge_K_lists(_lists) do
+    # write your code here
+  end
+end

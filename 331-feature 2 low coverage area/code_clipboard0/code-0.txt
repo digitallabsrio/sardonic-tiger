@@ -1,0 +1,59 @@
+defmodule Coverage do
+  def maximum_row_area(heights) do
+    # Initialize stack with the default L value
+    stack = Arrays.new([-1])
+    max_area = 0
+    {stack, max_area} = 
+      0..Arrays.size(heights)-1
+      |> Enum.reduce({stack, max_area}, fn(i, {stack, max_area}) ->
+        {stack, max_area} = update_stack_area(heights, stack, max_area, i)
+        stack = stack |> Arrays.append(i)
+        {stack, max_area}
+      end)
+
+    update_area(heights, stack, max_area)
+  end
+
+  defp update_stack_area(heights, stack, max_area, i) do
+    cond do
+      stack[-1] != -1 and heights[stack[-1]] >= heights[i] ->
+        {:ok, {index, stack}} = stack |> Arrays.extract()
+        height = heights[index]
+
+        r = i
+        l = stack[-1]
+        width = (r - l) - 1
+        area = height * width
+        max_area = max(max_area, area)
+
+        update_stack_area(heights, stack, max_area, i)
+
+      true -> {stack, max_area}
+    end
+  end
+
+  # Case when no valid R value exists anymore
+  defp update_area(heights, stack, max_area) do
+    cond do
+      stack[-1] == -1 -> max_area
+      true ->
+        {:ok, {index, stack}} = stack |> Arrays.extract()
+        height = heights[index]
+
+        r = Arrays.size(heights)
+        l = stack[-1]
+        width = (r - l) - 1
+        area = height * width
+        max_area = max(max_area, area)
+
+        update_area(heights, stack, max_area)
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+heights = Arrays.new([2,1,5,6,2,3])
+IO.puts "Maximum Row Area: #{Coverage.maximum_row_area(heights)}"

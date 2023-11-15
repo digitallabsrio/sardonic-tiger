@@ -1,0 +1,51 @@
+defmodule Products do
+    def get_cloned_node(visited, old_node) do
+        cond do
+            !old_node -> nil
+            # If its in the visited dictionary then return the new node reference from the dictionary
+            visited[old_node] != nil -> visited[old_node]
+            true ->
+                # Otherwise create a new node, save the reference in the visited dictionary and return it.
+                new_node = Product.Node.init(old_node.prod)
+                visited = Map.put(visited, old_node, new_node)
+
+                new_node = %Product.Node{new_node | next: get_cloned_node(visited, old_node.next)}
+                %Product.Node{new_node | related: get_cloned_node(visited, old_node.related)}
+        end
+    end
+
+    def copy_product_relations(head) do
+        cond do
+            !head -> head
+            true ->
+                visited = %{}
+                old_node = head         
+                # Iterate on the linked list until all nodes are cloned.
+                get_cloned_node(visited, old_node)
+        end
+    end
+end
+
+# Driver code
+defmodule Main do
+    def main do
+        IO.puts "-----------------------------"
+        IO.puts "PROGRAM OUTPUT:"
+
+        products = Helper.create_list([3, 1, 5, 4], [2, 0, nil, 1])
+        # The create_list(values, pointer) is a utility function with parameters as: 
+        # 1. values: an array of values to be stored in linked list, i.e., product IDs.
+        # 2. pointer: an array containing indices of values that the "related" pointer
+        # of the corresponding product will point to. 
+        # This function creates the list and returns the head. 
+
+        IO.puts "Original list:"
+        IO.inspect Helper.list_to_string(products)
+        # The list_to_string(head) function is also a utility function that returns 
+        # string representation of the list
+
+        copied_list = Products.copy_product_relations(products)
+        IO.puts "Deep copy of list:"
+        IO.inspect Helper.list_to_string(copied_list)
+    end
+end

@@ -1,0 +1,64 @@
+defmodule Solution do
+  def similarity_extent(sample1, sample2) do
+    n = byte_size(sample1)
+    m = byte_size(sample2)
+
+    # initialize an array to store all the computations
+    d = 
+      List.duplicate(nil, m+1)
+      |> Arrays.new
+      |> List.duplicate(n+1)
+      |> Arrays.new
+    
+    # cater the base case of the edit distance between 
+    # an empty string and non-empty string.
+    d = 
+      0..n
+      |> Enum.reduce(d, fn (i, acc) -> 
+        Arrays.replace(acc, i, Arrays.replace(acc[i], 0, i))
+      end)
+
+    d = 
+      0..m 
+      |> Enum.reduce(d, fn (j, acc) -> 
+        Arrays.replace(acc, 0, Arrays.replace(acc[0], j, j))
+      end)
+
+    # loop over the nucleotides both samples and compute the 
+    # edit distances D[i][j].
+    d = 
+      Enum.reduce(1..n, d, fn (i, acc) ->
+      Enum.reduce(1..m, acc, fn (j, acc) ->
+
+        left = (acc[i - 1])[j]  # delete
+        down = (acc[i])[j - 1]  # insert
+        left_down = (acc[i - 1])[j - 1]  # replace
+
+        cond do
+          String.at(sample1, i-1) == String.at(sample2, j-1) ->
+
+            min_val = min(left, min(down, left_down - 1))
+            replaced_list = Arrays.replace(acc[i], j, min_val + 1)
+            Arrays.replace(acc, i, replaced_list)
+
+          true ->
+            min_val = min(left, min(down, left_down))
+            replaced_list = Arrays.replace(acc[i], j, min_val + 1)
+            Arrays.replace(acc, i, replaced_list)
+        end
+      end)
+    end)
+
+    (d[n])[m]
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+sample1 = "abcdef";
+sample2 = "azced"
+
+operations = Solution.similarity_extent(sample1, sample2)
+IO.inspect operations

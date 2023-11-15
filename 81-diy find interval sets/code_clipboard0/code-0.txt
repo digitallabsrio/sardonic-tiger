@@ -1,0 +1,5 @@
+defmodule Solution do
+  def find_sets(_intervals) do
+    # write your code here
+  end
+end

@@ -1,0 +1,29 @@
+defmodule Stock do
+  def update_curr(current_max, val) when current_max < 0, do: val
+  def update_curr(current_max, val), do: current_max + val
+
+  def update_global(current_max, global_max) when global_max < current_max, do: current_max
+  def update_global(_current_max, global_max), do: global_max
+
+  def max_profit(a) when length(a) < 1, do: 0
+  def max_profit(a) do
+    current_max = hd(a)
+    global_max = hd(a)
+
+    a
+    |> Enum.reduce({current_max, global_max}, fn(val, {current_max, global_max}) ->
+      current_max = update_curr(current_max, val)
+      global_max = update_global(current_max, global_max)
+
+      {current_max, global_max}
+    end)
+    |> elem(1)
+  end
+end
+
+# Driver Code 
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+stocks = [-4, 2, -5, 1, 2, 3, 6, -5, 1]
+IO.puts "Maximum Profit: #{Stock.max_profit(stocks)}%"

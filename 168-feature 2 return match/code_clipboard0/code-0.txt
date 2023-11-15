@@ -1,0 +1,46 @@
+defmodule Plagiarism do
+  def match(cheater, student) do
+    window = ""
+    i = j = 0
+    mini = 2147483647
+    cheater_traversal(cheater, student, window, i, j, mini)
+  end
+
+  defp cheater_traversal(cheater, _student, window, i, _j, _mini) when i >= byte_size(cheater), do: window
+  defp cheater_traversal(cheater, student, window, i, j, mini) do
+    cond do 
+      String.at(cheater, i) == String.at(student, j) ->
+        j = j + 1
+
+        cond do
+          j == byte_size(student) ->
+            end_var = (i + 1)
+            j = j - 1
+
+            {i, j} = comparing_cheater_student(cheater, student, i, j)
+            j = j + 1
+            i = i + 1
+          
+            {window, mini} = if end_var - i < mini, do: {String.slice(cheater, i..end_var-1), end_var - i}, else: {window, mini}
+            cheater_traversal(cheater, student, window, i+1, j, mini)
+
+          true -> cheater_traversal(cheater, student, window, i+1, j, mini)
+        end
+      true -> cheater_traversal(cheater, student, window, i+1, j, mini)
+    end
+  end
+
+  defp comparing_cheater_student(_cheater, _student, i, j) when j < 0, do: {i ,j} 
+  defp comparing_cheater_student(cheater, student, i, j) do
+    j = if String.at(cheater, i) == String.at(student, j), do: j - 1, else: j
+    comparing_cheater_student(cheater, student, i-1, j)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+cheater = "quiqutit"
+student = "quit"
+IO.puts "Copied Content: #{Plagiarism.match(cheater, student)}"

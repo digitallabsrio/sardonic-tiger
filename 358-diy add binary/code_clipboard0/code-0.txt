@@ -1,0 +1,5 @@
+defmodule Solution do
+  def add_binary(_a, _b) do
+    # write your code here
+  end
+end   

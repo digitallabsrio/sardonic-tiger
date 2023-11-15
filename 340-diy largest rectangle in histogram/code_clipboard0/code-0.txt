@@ -1,0 +1,5 @@
+defmodule Solution do
+  def largest_rectangle_area(_heights) do
+    # write your code here
+  end
+end

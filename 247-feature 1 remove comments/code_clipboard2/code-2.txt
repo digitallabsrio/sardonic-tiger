@@ -1,0 +1,64 @@
+defmodule Comments do
+
+  @doc """
+  :type source: List[str]
+  :rtype: List[str]
+  """
+  def remove_comments_driver(source) do
+    output = []
+    buffer = ""
+    block = false
+
+    source 
+    |> Enum.reduce(output, fn(line, output) ->
+      i = 0
+      {buffer, block} = remove_comments(line, buffer, block, i)
+      if buffer != "" and !block, do: [buffer | output], else: output
+    end)
+    |> :lists.reverse
+  end
+
+  def remove_comments(line, buffer, block, i) when i >= byte_size(line), do: {buffer, block}
+  def remove_comments(line, buffer, block, i) do    
+    char = String.at(line, i)
+    
+    {buffer, block, i} = 
+      cond do
+        # "//" -> inline comment.
+        String.equivalent?(char, "/") and i + 1 < byte_size(line) and String.equivalent?(String.at(line, i+1), "/") and !block ->
+          {buffer, block, byte_size(line)}  # Advance pointer to end of current line.
+
+        # "/*" -> start of block comment.
+        String.equivalent?(char, "/") and i + 1 < byte_size(line) and String.equivalent?(String.at(line, i+1), "*") and !block ->
+          {buffer, true, i + 1}
+
+        # "*/" -> end of block comment.
+        String.equivalent?(char, "*") and i + 1 < byte_size(line) and String.equivalent?(String.at(line, i+1), "/") and block ->
+          {buffer, false, i + 1}
+
+        # normal character -> Append to buffer if not in block comment.
+        !block -> {buffer <> char, block, i}
+
+        true -> {buffer, block, i}
+      end
+
+    remove_comments(line, buffer, block, i+1)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+source = ["/* Example code for feature */", 
+            "int main() {", 
+            "  /*", 
+            "  This is a", 
+            "  block comment", 
+            "  */", 
+            "  int value = 10;  // This is an inline comment", 
+            "  int sum = value + /* this is // also a block */ value;", 
+            "  return 0;", 
+            "}"]
+
+IO.inspect Comments.remove_comments_driver(source)

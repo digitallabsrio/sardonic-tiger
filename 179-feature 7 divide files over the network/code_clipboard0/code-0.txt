@@ -1,0 +1,33 @@
+defmodule Network do
+  def divide_files(files) do
+    # Compute the last occurences of each letter
+    last =
+      files 
+      |> String.graphemes 
+      |> Enum.with_index
+      |> Enum.reduce(%{}, fn ({f, i}, last) -> Map.put(last, f, i) end)
+
+    start = end_var = count = 0
+
+    # Traverse the string
+    files 
+    |> String.graphemes 
+    |> Enum.with_index
+    |> Enum.reduce({start, end_var, count}, fn({f, i}, {start, end_var, count}) ->
+      # Compute the highest last occurence position
+      end_var = max(end_var, last[f])
+
+      # Clause for when we reach the highest last occurence position
+      {start, count} = if i == end_var, do: {end_var + 1, count + 1}, else: {start, count}
+      {start, end_var, count}
+    end)
+    |> elem(2)    
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+files = "abacdc"
+IO.puts "The files #{files} will be divided into #{Network.divide_files(files)} worker nodes!"

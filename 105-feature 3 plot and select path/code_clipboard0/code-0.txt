@@ -1,0 +1,66 @@
+defmodule Paths do
+  def backtrack_evaluate(city, curr_node, target_node, acc_sum, visited) do
+    visited = MapSet.put(visited, curr_node)
+    ret = -1.0
+    neighbors = city[curr_node]
+    ret = 
+      cond do
+        Map.has_key?(neighbors, target_node) -> acc_sum + neighbors[target_node]
+        true ->
+          neighbors
+            |> Enum.map(fn {neighbor, value} ->
+              cond do 
+                Map.has_key?(visited, neighbor) -> {:cont, ret}
+                ret != -1.0 -> {:break, ret}
+                true -> backtrack_evaluate(city, neighbor, target_node, acc_sum + value, visited)             
+              end
+            end)
+      end
+      _visited = visited |> Map.delete(curr_node)
+      ret
+  end
+  
+  def get_total_cost(g_map, path_costs, drivers, user) do
+    # Step 1). build the city from the G_map
+    city = 
+      Enum.zip(g_map, path_costs)
+      |> Enum.reduce(%{}, fn {[source_node | dest_node], path_cost}, city ->
+          dest_node = hd(dest_node)
+          value_source = Map.get(city, source_node, %{})
+          value_dest = Map.get(city, dest_node, %{})
+
+          city = Map.put(city, source_node, Map.put(value_source, dest_node, path_cost))
+          Map.put(city, dest_node, Map.put(value_dest, source_node, path_cost))
+      end)
+
+    # Step 2). Evaluate each driver via backtracking (DFS)
+    #  by verifying if there exists a path from driver to user
+    drivers
+    |> Enum.reduce([], fn driver, results ->
+      ret = 
+        cond do
+          # Either node does not exist
+          !Map.has_key?(city, driver) or !Map.has_key?(city, user) -> -1.0
+          true ->
+            visited = MapSet.new()
+            backtrack_evaluate(city, driver, user, 0, visited)
+        end
+      
+      ret = if is_list(ret), do: hd(ret), else: ret
+      [ret | results]
+    end)
+    |> :lists.reverse
+   end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+g_map = [["a","b"],["b","c"],["a","e"],["d","e"]]
+path_costs = [12.0,23.0,26.0,18.0]
+drivers = ["c", "d", "e", "f"]
+user = "a"
+
+all_path_costs = Paths.get_total_cost(g_map, path_costs, drivers, user)
+IO.puts "Total cost of all paths #{Main.stringify(all_path_costs)}"

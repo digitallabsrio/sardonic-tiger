@@ -1,0 +1,6 @@
+defmodule Solution do
+  def max_sum(_nums, _k) do
+    # write code here
+    -1
+  end
+end

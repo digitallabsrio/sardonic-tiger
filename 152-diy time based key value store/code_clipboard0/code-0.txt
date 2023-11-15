@@ -1,0 +1,16 @@
+defmodule TimeMap do
+  # Write your code here
+  defstruct []
+
+  def init do 
+    # Write your code here
+  end
+
+  def set(_obj, _key, _value, _timestamp) do
+    # Write your code here
+  end
+
+  def get(_obj, _key, _timestamp) do
+    # Write your code here
+  end
+end

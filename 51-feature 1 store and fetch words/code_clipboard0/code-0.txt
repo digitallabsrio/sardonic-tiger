@@ -1,0 +1,88 @@
+defmodule Word.Node do
+    defstruct children: %{}, is_word: false
+    def init, do: %Word.Node{}
+end
+
+defmodule WordDictionary do
+    defstruct root: Word.Node.init
+    def init, do: %__MODULE__{}
+
+    defp node_creater_getter(node, key) do
+        node.children 
+        |> Map.put_new(key, Word.Node.init) 
+        |> Map.get(key)
+    end
+
+    def insert_word(node, [head | tail]) do
+        child = node_creater_getter(node, head)
+        child = insert_word(child, tail)
+        %Word.Node{node | children: Map.put(node.children, head, child)}
+    end
+    def insert_word(node, []), do: %Word.Node{node | is_word: true}
+
+    def insert_word(obj, word) do
+        node = obj.root
+        node = insert_word(node, word |> String.graphemes)
+        %__MODULE__{obj | root: node}
+    end
+
+    defp find_word([], node), do: node.is_word
+    defp find_word([head | tail], node) do
+        cond do
+            !Map.has_key?(node.children, head) -> false
+            true -> 
+                node = Map.get(node.children, head)
+                find_word(tail, node)
+        end
+    end
+
+    def search_word(obj, word) do
+        node = obj.root
+        
+        word 
+        |> String.graphemes 
+        |> find_word(node)
+    end
+
+    defp find_prefix([], _node), do: true
+    defp find_prefix([head | tail], node) do
+        cond do
+            !Map.has_key?(node.children, head) -> false
+            true -> 
+                node = Map.get(node.children, head)
+                find_prefix(tail, node)
+        end
+    end
+
+    def starts_with(obj, prefix) do
+        node = obj.root
+        
+        prefix 
+        |> String.graphemes 
+        |> find_prefix(node)
+    end
+end
+    
+## Driver Code
+defmodule Main do
+    def main do
+        IO.puts "-----------------------------"
+        IO.puts "PROGRAM OUTPUT:\n"
+
+        keys = ["the", "a", "there", "answer", "any", "by", "bye", "their", "abc"]
+        IO.puts "Keys to insert: "
+
+        d = WordDictionary.init
+
+        d = 
+            keys 
+            |> Enum.reduce(d, fn text, acc -> 
+                WordDictionary.insert_word(acc, text)
+            end)
+
+        IO.puts "Searching \"there\" in the dictionary results: #{d |> WordDictionary.search_word("there")}"
+        IO.puts "Searching the prefix \"by\" in the dictionary results: #{d |> WordDictionary.starts_with("by")}"
+    end
+end
+
+Main.main

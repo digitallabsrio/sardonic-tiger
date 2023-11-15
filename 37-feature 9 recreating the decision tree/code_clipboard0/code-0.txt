@@ -1,0 +1,48 @@
+defmodule Tree do
+  defstruct val: nil, left: nil, right: nil
+  def init(val), do: %Tree{val: val}
+end
+
+defmodule Construct_Binary_Tree do
+  # if there are no elements to construct the tree
+  def create_tree_from_val(_preorder, _inorder_val_idx, _p_idx, left, right) when left > right, do: nil
+  def create_tree_from_val(preorder, inorder_val_idx, p_idx, left, right) do
+    # select the p_idx element as the root and increment it
+    root_val = preorder[p_idx]
+    root = Tree.init(root_val)
+
+    p_idx = p_idx + 1
+    # Constructing the left and right subtree using the root value i.e., root_val 
+    # from the inorder_val_idx hashmap
+    inorder_value = inorder_val_idx[root_val]
+    nums_left = inorder_value - left;
+    root = %Tree{root | left: create_tree_from_val(preorder, inorder_val_idx, p_idx, left, inorder_value - 1)}
+    %Tree{root | right: create_tree_from_val(preorder, inorder_val_idx, p_idx + nums_left, inorder_value + 1, right)}
+  end
+ 
+  def re_creating_decision_tree(preorder, inorder) do
+    # Keeps track of index in preorder traversal.
+    p_idx = 0
+
+    # Storing the value -> index, in the inorder_val_idx hashmap.
+    inorder_val_idx = %{}
+    inorder_val_idx = 
+      inorder 
+      |> Enum.with_index 
+      |> Enum.reduce(inorder_val_idx, fn ({val, i}, inorder_val_idx) ->
+        Map.put(inorder_val_idx, val, i)
+      end)
+
+    create_tree_from_val(preorder, inorder_val_idx, p_idx, 0, Arrays.size(preorder) - 1)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+preorder = Arrays.new(["subject", "viewed", "notviewed", "similar", "nonsimilar"])
+inorder = ["viewed", "subject", "similar", "notviewed", "nonsimilar"]
+
+tree = Construct_Binary_Tree.re_creating_decision_tree(preorder, inorder)
+IO.inspect Helper.level_order(tree)

@@ -1,0 +1,74 @@
+defmodule Solution do
+  def binary_search(servers, num, left, right) do
+    cond do
+      left < right ->
+        mid = div(left + right, 2)
+        if servers[mid] >= num, do: binary_search(servers, num, left, mid), else: binary_search(servers, num, mid+1, right)
+      true -> left
+    end
+  end
+
+  def sliding_window(servers, k, num, left, right, size) do
+    cond do
+      right - left - 1 < k ->
+
+        # check for out of bounds
+        cond do
+          left == -1 -> sliding_window(servers, k, num, left, right+1, size)
+
+          true -> 
+            # Expand the window towards the side with the closer number
+            # Be careful to not go out of bounds with the pointers
+            # |a - x| < |b - x|,
+            # |a - x| == |b - x|
+            cond do
+              right == size or abs(servers[left] - num) <= abs(servers[right] - num) ->
+                sliding_window(servers, k, num, left-1, right, size)
+
+              true -> sliding_window(servers, k, num, left, right+1, size)
+            end
+        end
+
+      true ->{left, right}
+    end
+  end
+
+  def find_servers(servers, k, num) do
+    machines = []
+
+    # If the number of servers is same as k,
+    # return the original servers array
+    cond do
+      Arrays.size(servers) == k -> 
+        k..0
+        |> Enum.reduce(machines, fn(i, machines) -> [servers[i] | machines] end)
+
+      true -> 
+        # Do a binary search to find the element closest to num
+        left = binary_search(servers, num, 0, Arrays.size(servers))
+
+        # Initialize the pointers for the sliding window
+        left = left - 1
+        right = left + 1
+
+        # While the sliding window size is less than k
+        {left, right} = sliding_window(servers, k, num, left, right, Arrays.size(servers))
+
+        # Build and return the window
+        right-1..left+1 
+        |> Enum.reduce(machines, fn(i, machines) ->
+          [servers[i] | machines]
+        end)
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+servers = Arrays.new([1,2,3,4,5])
+k = 4
+num = 3
+k_machines = Solution.find_servers(servers, k, num)
+IO.puts("#{inspect k_machines}")

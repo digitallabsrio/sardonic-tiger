@@ -1,0 +1,45 @@
+defmodule Brokers do
+  def top_brokers(broker_ids, k) do
+    # find the frequency of each number
+    num_frequency_map = %{}
+
+    num_frequency_map = 
+      broker_ids
+      |> Enum.reduce(num_frequency_map, fn(num, num_frequency_map) ->
+        # find the frequency of each number
+        Map.put(num_frequency_map, num, Map.get(num_frequency_map, num, 0) + 1)
+      end)
+
+    # go through all numbers of the num_frequency_map and push them in the min_heap, which will have
+    # top k frequent numbers. If the heap size is more than k, we remove the smallest(top) number
+    min_heap =
+      num_frequency_map
+      |> Enum.reduce([], fn {num, frequency}, min_heap ->
+        min_heap = min_heap |> Enum.into(Heap.new()) |> Heap.push({frequency, num})
+        if Heap.size(min_heap) > k, do: min_heap |> Heap.pop(), else: min_heap
+      end)
+
+    # create a list of top k numbers
+    top_numbers = []
+    update_top_numbers(min_heap, top_numbers)
+    |> :lists.reverse
+  end
+
+  def update_top_numbers(min_heap, top_numbers) do
+    cond do
+      Heap.size(min_heap) > 0 ->
+        value = Heap.root(min_heap)
+        min_heap = min_heap |> Heap.pop
+        update_top_numbers(min_heap, [elem(value, 1) | top_numbers])
+      
+      true -> top_numbers 
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+output_string = "#{inspect Brokers.top_brokers([1, 3, 5, 12, 11, 12, 11, 12, 5], 3)}"
+IO.puts "Here are the IDs of the top K brokers of the quarter: #{output_string}"

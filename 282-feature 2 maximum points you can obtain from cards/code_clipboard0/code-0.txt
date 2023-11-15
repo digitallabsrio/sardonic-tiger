@@ -1,0 +1,26 @@
+defmodule Cards do
+  def max_points(deck, k) do
+    left = 0
+    right = Arrays.size(deck) - k
+    total = 
+      Enum.slice(deck, right, Arrays.size(deck) - right)
+      |> Enum.sum
+    best = total
+
+    0..k-1
+    |> Enum.reduce({total, best, left, right}, fn(_, {total, best, left, right}) ->
+      total = total + deck[left] - deck[right]
+      best = max(best, total)
+      {total, best, left + 1, right + 1}
+    end)
+    |> elem(1)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+deck = Arrays.new([5,3,4,4,2,3,2,6,3]) 
+k = 4
+IO.inspect Cards.max_points(deck, k)

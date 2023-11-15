@@ -1,0 +1,16 @@
+defmodule FreqStack do
+  defstruct []
+  def init do 
+    # Initialize your data structures here
+  end
+
+  def push(obj, _data) do
+    # Write your code here
+    obj
+  end
+
+  def pop(obj) do
+    # Write your code here
+    {-1, obj}
+  end
+end

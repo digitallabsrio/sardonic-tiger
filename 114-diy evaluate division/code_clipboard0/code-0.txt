@@ -1,0 +1,5 @@
+defmodule Solution do
+  def evaluate(_equations, _values, _queries) do
+    # write your code here
+  end
+end

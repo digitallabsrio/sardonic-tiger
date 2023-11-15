@@ -1,0 +1,35 @@
+defmodule Solution do
+  def flatten(nil, curr), do: curr
+  def flatten(root, curr) do
+    # If the current node has right child
+    curr = flatten(root.right, curr)
+    # If the current node does not have right child
+    curr = flatten(root.left, curr)
+    # Return final updated version
+    %TreeNode{root | right: curr, left: nil}
+  end
+
+  def flatten(nil), do: nil
+  def flatten(root) do
+    flatten(root, nil)
+  end
+end
+    
+# Driver code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    root = TreeNode.init(1)
+    root = %TreeNode{root | left: TreeNode.init(2)}
+    root = %TreeNode{root | right: TreeNode.init(4)}
+    root = %TreeNode{root | left: %TreeNode{root.left | left: TreeNode.init(3)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init(5)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init(6)}}
+
+    Solution.flatten(root) |> Helper.print_tree
+  end
+end
+
+Main.main

@@ -1,0 +1,6 @@
+defmodule Solution do
+  def permute_palindrome(_str) do
+    # write your code here
+    false
+  end
+end

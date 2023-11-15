@@ -1,0 +1,70 @@
+defmodule Processes do
+  alias Okasaki.Deque, as: Deque
+
+  def schedule_process(vertices, _edges) when vertices <= 0, do: []
+  def schedule_process(vertices, edges) do
+    sorted_order = []
+
+    # a. Initialize the graph
+    in_degree = # count of incoming edges
+      0..vertices-1
+      |> Enum.reduce(%{}, fn (i, in_degree) -> Map.put(in_degree, i, 0) end)
+
+    graph = # adjacency list graph
+      0..vertices-1
+      |> Enum.reduce(%{}, fn (i, graph) -> Map.put(graph, i, Arrays.empty) end)
+
+    # b. Build the graph  
+    {in_degree, graph} = 
+      edges
+      |> Enum.reduce({in_degree, graph}, fn([child, parent], {in_degree, graph}) ->
+        # put the child into it's parent's list 
+        graph = update_in(graph, [parent], &(Arrays.append(&1, child))) 
+        # increment child's in_degree
+        in_degree = Map.put(in_degree, child, in_degree[child] + 1)
+        {in_degree, graph}
+      end)
+
+    # c. Find all sources i.e., all vertices with 0 in-degrees
+    sources = 
+      in_degree 
+      |> Enum.reduce(Deque.new([]), fn({k, _}, sources) ->
+          if in_degree[k] == 0, do: sources |> Deque.insert_right(k), else: sources
+      end)
+
+    # d. For each source, add it to the sorted_order and subtract one from all of its children's in-degrees
+    # if a child's in-degree becomes zero, add it to the sources queue
+    sorted_order = topo_sort(sources, in_degree, graph, sorted_order)
+
+    # topological sort is not possible as the graph has a cycle
+    if length(sorted_order) != vertices, do: [], else: sorted_order |> :lists.reverse
+  end
+
+  defp topo_sort(sources, in_degree, graph, sorted_order) do
+    cond do
+      Deque.size(sources) == 0 -> sorted_order
+      true ->
+        {:ok, {vertex, sources}} = Deque.remove_left(sources)
+        sorted_order = [vertex | sorted_order]
+        
+        # get the node's children to decrement their in-degrees
+        {in_degree, sources} = 
+          graph[vertex]
+          |> Enum.reduce({in_degree, sources}, fn(child, {in_degree, sources}) ->
+            in_degree = Map.put(in_degree, child, in_degree[child] - 1)
+            sources = if in_degree[child] == 0, do: sources |> Deque.insert_right(child), else: sources 
+            {in_degree, sources}
+          end)
+
+        topo_sort(sources, in_degree, graph, sorted_order)
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+n = 4
+dependencies = [[1,0],[2,0],[3,1],[3,2]]
+IO.puts "Topological sort: #{inspect Processes.schedule_process(n, dependencies)}"

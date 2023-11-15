@@ -1,0 +1,35 @@
+defmodule Solution do
+  def calculate_minimum_servers(_workload, rem, _counter) when rem < 0, do: -1
+  def calculate_minimum_servers(_workload, rem, _counter) when rem == 0, do: 0
+  def calculate_minimum_servers(workload, rem, counter) do
+    cond do
+      counter[rem - 1] != 'inf' -> counter[rem - 1]
+      true ->
+        min = 'inf'
+
+        min = 
+          workload 
+          |> Enum.reduce(min, fn(server, min) ->
+            result = calculate_minimum_servers(workload, rem - server, counter)
+            if result >= 0 and result < min, do: 1 + result, else: min
+          end)
+
+        counter = if min != 'inf', do: Arrays.replace(counter, rem - 1, min), else: Arrays.replace(counter, rem - 1, -1)
+        counter[rem - 1]
+    end
+  end
+
+  def find_minimum_servers(_workload, demand) when demand < 1, do: 0
+  def find_minimum_servers(workload, demand) do
+    counter = Arrays.new(List.duplicate('inf', demand))
+    calculate_minimum_servers(workload, demand, counter)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+workload = [2,3,4]
+demand = 8
+IO.inspect Solution.find_minimum_servers(workload, demand)

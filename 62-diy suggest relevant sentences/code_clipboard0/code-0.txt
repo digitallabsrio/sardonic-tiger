@@ -1,0 +1,12 @@
+defmodule SuggestionSystem do
+  defstruct []
+  
+  def init(_sentences, _times) do
+    # write your code here
+  end
+
+  def input(obj, _c) do
+    # write your code here
+    {obj, nil}
+  end
+end

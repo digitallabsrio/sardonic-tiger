@@ -1,0 +1,5 @@
+defmodule Solution do
+  def search_matrix(_matrix, _target) do
+    # write your code here
+  end
+end

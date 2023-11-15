@@ -1,0 +1,6 @@
+defmodule Solution do
+  def verify_alien_dictionary(_words, _order) do  
+    # Write your code here
+    false
+  end
+end

@@ -1,0 +1,6 @@
+defmodule Solution do
+  def min_distance(_str1, _str2) do
+    # write your code here
+    0
+  end
+end

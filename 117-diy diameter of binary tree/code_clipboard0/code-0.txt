@@ -1,0 +1,6 @@
+defmodule Solution do
+  def diameter_of_binaryTree(_root) do
+    # write your code here
+    -1
+  end
+end

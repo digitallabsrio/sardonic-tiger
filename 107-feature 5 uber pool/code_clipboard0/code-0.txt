@@ -1,0 +1,48 @@
+defmodule Uber do
+  defstruct cum_sums: Arrays.new([]), total_sum: nil
+
+  def init(metrics) do
+    cum_sum = 0
+    {obj, cum_sum} = 
+      metrics
+      |> Enum.reduce({%__MODULE__{}, cum_sum}, fn(metric, {obj, cum_sum}) ->
+        cum_sum = cum_sum + metric
+        obj = %__MODULE__{obj | cum_sums: obj.cum_sums |> Arrays.append(cum_sum)}
+        {obj, cum_sum}
+      end)
+
+    %__MODULE__{obj | total_sum: cum_sum}
+  end
+
+  def pick_route(obj) do
+    target = obj.cum_sums[-1] * :rand.uniform()
+
+    # Binary search to find the target
+    low = 0
+    high = Arrays.size(obj.cum_sums)
+
+    binary_search(obj, low, high, target)
+  end
+
+  defp binary_search(obj, low, high, target) do
+    cond do
+      low < high ->
+        mid = div(low + high, 2)
+        cond do
+          target > obj.cum_sums[mid] -> binary_search(obj, mid+1, high, target)
+          true -> binary_search(obj, low, mid, target)
+        end
+      true -> low
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+uber = Uber.init([1, 2, 3])
+
+0..9
+|> Enum.map(fn _ ->
+  IO.puts "Randomly choose route #{uber |> Uber.pick_route}"
+end)

@@ -1,0 +1,19 @@
+defmodule Solution do
+  def reverse_words(s) do
+    # Remove leading and trailing spaces
+    s = s |> String.trim
+
+    # Split the string by multiple spaces
+    word_list = s |> String.split()
+
+    # Reverse the wordList
+    word_list 
+    |> Enum.reverse 
+    |> Enum.join(" ")
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.reverse_words("   ")

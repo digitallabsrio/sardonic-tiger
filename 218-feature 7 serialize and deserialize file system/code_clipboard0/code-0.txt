@@ -1,0 +1,126 @@
+defmodule Codec do
+  alias Okasaki.Deque, as: Deque
+
+  def serialize(children_count, result, queue) do
+    size = Deque.size(queue)
+    cond do
+      size > 0 -> 
+
+        {children_count, result, queue} = 
+            0..size-1 
+            |> Enum.reduce({children_count, result, queue}, fn(_, {children_count, result, queue}) -> 
+                {:ok, {curr, queue}} = Deque.remove_left(queue)
+                children_count = Arrays.append(children_count, Arrays.size(curr.children))
+
+                case curr do
+                    nil -> {children_count, Arrays.append(result, "n"), queue}
+                    _ ->
+                        result = Arrays.append(result, to_string(curr.val))
+                        queue =
+                            curr.children 
+                            |> Enum.reduce(queue, fn(next, queue) ->
+                                queue |> Deque.insert_right(next)
+                            end)
+
+                        {children_count, result, queue}
+                end
+            end)
+
+        serialize(children_count, result, queue)
+
+      true -> {children_count, result}
+    end
+  end
+
+  # Encodes a tree to a single string.
+  def serialize(nil), do: ""
+  def serialize(root) do
+    result = Arrays.new([])
+    children_count = Arrays.new([])
+
+    queue = Deque.new()
+    queue = queue |> Deque.insert_right(root)
+
+    {children_count, result} = serialize(children_count, result, queue)
+    Enum.join(children_count, ",") <> "|" <> Enum.join(result, ",")
+  end
+
+  def deserialize(nil, _children_count, _all_nodes, _i, _all_level_count_index), do: nil  
+  def deserialize(root, children_count, all_nodes, i, all_level_count_index) do  
+    cond do
+      all_level_count_index < Arrays.size(children_count) and i < Arrays.size(children_count) ->  
+        0..children_count[all_level_count_index]-1
+        |> Enum.reduce({i, root}, fn(_, {i, root}) ->
+          cond do
+            all_nodes[i] != "n" ->
+              curr = NaryNode.init(all_nodes[i], Arrays.new([]))
+              cond do
+                children_count[i] != 0 -> 
+                  i = i + 1
+                  curr = deserialize(curr, children_count, all_nodes, children_count[i - 1] + i, i)
+                  root = %NaryNode{root | children: Arrays.append(root.children, curr)}
+                  {i, root}
+
+                true -> {i+1, %NaryNode{root | children: Arrays.append(root.children, curr)}}
+              end
+            true -> {i, root}
+          end
+        end)
+        |> elem(1)
+
+      true -> root
+    end
+  end
+
+  # Decodes your encoded data to tree.
+  def deserialize(""), do: nil
+  def deserialize(data) do
+    [c0, c1] = data |> String.split("|")
+
+    children_count = 
+      c0 
+      |> String.split(",") 
+      |> Enum.map(fn c -> String.to_integer(c) end) 
+      |> Arrays.new
+
+    all_nodes = 
+      c1 
+      |> String.split(",") 
+      |> Arrays.new
+    
+    root = NaryNode.init(all_nodes[0], Arrays.new([]))
+    i = 1
+    all_level_count_index = 0
+
+    deserialize(root, children_count, all_nodes, i, all_level_count_index)
+  end
+end
+
+defmodule Main do
+  def main do
+    # Driver Code
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:\n"
+
+    children_root = Arrays.new([])
+    children_d1 = Arrays.new([])
+
+    children_d1 = Arrays.append(children_d1, NaryNode.init("F3"))
+    children_d1 = Arrays.append(children_d1, NaryNode.init("F4"))
+    children_root = Arrays.append(children_root, NaryNode.init("D1", children_d1))
+    children_root = Arrays.append(children_root, NaryNode.init("F1"))
+    children_root = Arrays.append(children_root, NaryNode.init("F2"))
+
+    root = NaryNode.init("r", children_root)
+    s = root |> Codec.serialize
+    IO.puts "Serializing the tree:"
+    IO.puts s
+    IO.puts("Deserializing the string:")
+
+    flag = List.duplicate(true, 6)
+    # print_n_tree is a utility function for printing our n-ary tree
+    Helper.print_n_tree(Codec.deserialize(s), flag, 0, false) 
+  end
+end
+
+Main.main

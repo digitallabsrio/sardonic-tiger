@@ -1,0 +1,21 @@
+defmodule WordDictionary do
+  defstruct []
+  def init do
+    # write your code here
+  end
+
+  def add_word(_obj, _word) do
+    # write your code here
+    nil
+  end
+
+  def search(_obj, _word) do
+    # write your code here
+    false
+  end
+
+  def get_words(_obj) do
+    # write your code here
+    []
+  end
+end

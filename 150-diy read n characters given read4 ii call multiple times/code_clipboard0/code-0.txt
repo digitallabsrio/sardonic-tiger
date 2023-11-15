@@ -1,0 +1,9 @@
+defmodule Solution do
+  defstruct state: BufferState.init(0, 0), reader: Reader4.init
+  def init, do: %__MODULE__{}
+
+  def read(obj, buffer, _n) do
+    # Write your coder here
+    {obj, -1, buffer}
+  end
+end

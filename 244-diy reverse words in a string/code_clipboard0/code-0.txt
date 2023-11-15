@@ -1,0 +1,6 @@
+defmodule Solution do
+  # Remove leading and trailing spaces
+  def reverse_words(_s) do   
+    # Write your code here
+  end
+end

@@ -1,0 +1,87 @@
+defmodule TreeNode do
+  defstruct val: nil, children: Arrays.new([])
+  def init(val), do: %TreeNode{val: val}
+end
+
+defmodule DOMStructure do
+  alias Okasaki.Deque, as: Deque
+
+  defp insert_children(children, queue) do
+    0..(Arrays.size(children)-1)//1
+    |> Enum.reduce(queue, fn(i, queue) -> queue |> Deque.insert_right(children[i]) end)
+  end
+
+  def update_queue_currlevel(queue, current_level, queue_size) do
+    0..queue_size-1
+    |> Enum.reduce({queue, current_level}, fn(_, {queue, current_level}) ->
+      {:ok, {current_node, queue}} = queue |> Deque.remove_left
+
+      # add the node to the current level
+      current_level = current_level |> Arrays.append(current_node.val)
+
+      # insert the children of current node in the queue
+      cond do
+        current_node.children != nil or Arrays.size(current_node.children) > 1 ->
+          queue = insert_children(current_node.children, queue)
+          {queue, current_level}
+        true -> 
+          queue = queue |> Deque.insert_right(current_node.children)
+          {queue, current_level}
+      end
+    end)
+  end
+
+  defp update_result(queue, result) do
+    cond do
+      Deque.size(queue) == 0 -> result |> Arrays.to_list
+      true ->
+        queue_size = queue |> Deque.size
+        current_level = Arrays.new([])
+        {queue, current_level} = update_queue_currlevel(queue, current_level, queue_size)
+        
+        result = result |> Arrays.append(current_level)
+        update_result(queue, result)
+    end
+  end
+
+  def traverse(nil), do: []
+  def traverse(root) do
+    result = Arrays.new([])
+    queue = Deque.new([])
+    queue = queue |> Deque.insert_right(root)
+    update_result(queue, result) 
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+root = TreeNode.init("body")
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init("div")))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init("h1")))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init("div")))
+
+value = root.children[0].children |> Arrays.append(TreeNode.init("h2"))
+root = put_in(root.children[0].children, value)
+i_value = root.children[0].children[0].children |> Arrays.append(TreeNode.init("ul"))
+root = put_in(root.children[0].children[0].children, i_value)
+value = root.children[0].children |> Arrays.append(TreeNode.init("h3"))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init("a"))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init("p"))
+root = put_in(root.children[0].children[1].children, i_value)
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init("table"))
+root = put_in(root.children[0].children[1].children, i_value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init("p"))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init("a"))
+root = put_in(root.children[2].children, value)
+value = root.children[2].children |> Arrays.append(TreeNode.init("p"))
+root = put_in(root.children[2].children, value)
+
+IO.puts "Web nodes at each level: "
+IO.inspect root |> DOMStructure.traverse |> Helper.helper_function

@@ -1,0 +1,17 @@
+defmodule NestedIterator do
+  defstruct []
+
+  def init(_nested_list) do
+    # Write your code here
+  end
+
+  def has_next(obj) do
+    # Write code here
+    {false, obj}
+  end
+
+  def next(obj) do    
+    # Write code here
+    {-1, obj}
+  end
+end

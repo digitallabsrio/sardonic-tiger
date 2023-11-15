@@ -1,0 +1,79 @@
+defmodule BinaryTree do
+    def left_boundary(boundary, node) do
+        cond do
+            !node or !node.left and !node.right -> boundary
+            true -> 
+                boundary = [node.val | boundary]
+                cond do
+                    node.left -> left_boundary(boundary, node.left)
+                    true -> left_boundary(boundary, node.right)
+                end
+        end
+    end
+
+    def leaves(boundary, root, node) do
+        cond do
+            !node -> boundary
+            true ->
+                boundary = leaves(boundary, root, node.left)
+                boundary = 
+                    if node != root and !node.left and !node.right do
+                        [node.val | boundary]
+                    else
+                        boundary
+                    end
+                
+                leaves(boundary, root, node.right)
+        end
+    end
+
+    def right_boundary(boundary, node) do
+        cond do
+            !node or !node.left and !node.right -> boundary
+            true -> 
+                boundary = 
+                    cond do
+                        node.right -> right_boundary(boundary, node.right)
+                        true -> right_boundary(boundary, node.left)
+                    end
+
+                [node.val | boundary]
+        end
+    end
+    
+    def boundary(root) when root == nil, do: []
+    def boundary(root) do
+        [root.val]
+        |> left_boundary(root.left)
+        |> leaves(root, root)
+        |> right_boundary(root.right)
+        |> :lists.reverse
+    end
+end
+
+# Driver code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    bt = TreeNode.init(1)
+    bt = %TreeNode{bt | left: TreeNode.init(2)}
+
+    bt = %TreeNode{bt | left: %TreeNode{bt.left | left: TreeNode.init(3)}}
+    bt = %TreeNode{bt | left: %TreeNode{bt.left | right: TreeNode.init(4)}}    
+    inner_left = %TreeNode{bt.left.right | left: TreeNode.init(5)}
+    bt = %TreeNode{bt | left: %TreeNode{bt.left | right: inner_left}}
+    
+    bt = %TreeNode{bt | right: TreeNode.init(6)}
+    bt = %TreeNode{bt | right: %TreeNode{bt.right | left: TreeNode.init(7)}}
+    inner_left = %TreeNode{bt.right.left | right: TreeNode.init(9)}
+    bt = %TreeNode{bt | right: %TreeNode{bt.right | left: inner_left}}
+
+    bt = %TreeNode{bt | right: %TreeNode{bt.right | right: TreeNode.init(8)}}
+    inner_right = %TreeNode{bt.right.right | right: TreeNode.init(10)}
+    bt = %TreeNode{bt | right: %TreeNode{bt.right | right: inner_right}}
+
+    IO.inspect BinaryTree.boundary(bt), charlists: :as_lists
+  end
+end

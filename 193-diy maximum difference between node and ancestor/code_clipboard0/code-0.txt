@@ -1,0 +1,6 @@
+defmodule Tree do
+  def max_ancestor_diff(_root) do
+    # write your code here
+    -1
+  end
+end

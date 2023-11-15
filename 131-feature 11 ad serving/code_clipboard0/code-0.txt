@@ -1,0 +1,93 @@
+defmodule AdServing do
+  defstruct state: BufferState.init(0, 0), reader: Reader4.init
+  def init, do: %__MODULE__{}
+
+  def filling_buffer(buffer, state, i, n) do
+    cond do
+      # Fill the buffer array using the already filled buff array
+      i < n and state.ptr < state.count ->
+        # Append the ad to buffer
+        buffer = buffer |> Arrays.append(state.buff[state.ptr])
+        state = %BufferState{state | ptr: state.ptr + 1}
+        filling_buffer(buffer, state, i+1, n)
+      true -> {buffer, state, i}
+    end
+  end
+
+  # Break the reduce if list of ads is empty or read4() returns 0 
+  def update_state(obj, buffer, i, _n) when obj.state.count == 0, do: {:halt, {obj, buffer, i}}
+  def update_state(obj, buffer, i, n) do
+    {buffer, state, i} = filling_buffer(buffer, obj.state, i, n)
+    # If ptr exceeds or reaches the count, the ptr will be set to 0
+    state = if state.ptr >= state.count, do: %BufferState{state | ptr: 0}, else: state
+    obj = %__MODULE__{obj | state: state}
+    {:cont, {obj, buffer, i}}
+  end
+
+  def update_obj(obj) when obj.state.ptr != 0, do: obj
+  # If ptr is 0 call the read4() API and read 4 ads from the list of ads
+  def update_obj(obj) do
+    {buff, reader} = Reader4.read4(obj)
+    state = %BufferState{obj.state | buff: buff}
+    state = %BufferState{state | count: Arrays.size(state.buff)}
+    %__MODULE__{obj | state: state, reader: reader}
+  end
+
+  def read_reduce(obj, buffer, i, n) when i == n, do: {:halt, {obj, buffer, i}}
+  def read_reduce(obj, buffer, i, n) do
+    obj = update_obj(obj)
+    update_state(obj, buffer, i, n)
+  end
+
+  def read(obj, buffer, n) do
+    # Initializing the bufferState struct
+    i = 0
+
+    # Reading the ads list till the given n
+    {obj, buffer, i} = 
+      i..n-1 
+      |> Enum.reduce_while({obj, buffer, i}, fn(_, {obj, buffer, i}) ->
+        read_reduce(obj, buffer, i, n)
+      end)
+
+    # Return the number of ads read 
+    {obj, i, buffer |> Arrays.to_list}
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+obj = AdServing.init
+buffer = Arrays.new([])
+
+# List of ads
+ads = "abcdhijk"
+IO.puts "Ads: #{ads}"
+queries = Arrays.new([3,5,2])
+
+# Example 1
+IO.puts "Example #1"
+IO.puts "User: Read #{queries[0]} ads."
+IO.puts "...reading #{queries[0]} ads..." 
+{obj, count, buffer} = AdServing.read(obj, buffer, queries[0])
+IO.puts "Ads count read by read(n): #{count}"
+IO.puts "Ads read by read(n): #{Enum.join(buffer, "")}"
+
+# Example 2
+IO.puts "\nExample #2"
+IO.puts "User: Read #{queries[1]} ads."
+buffer = Arrays.new([]) # Resetting the buffer
+IO.puts "...reading #{queries[1]} ads..." 
+{obj, count, buffer} = AdServing.read(obj, buffer, queries[1])
+IO.puts "Ads count read by read(n): #{count}"
+IO.puts "Ads read by read(n): #{Enum.join(buffer, "")}"
+
+# Example 3
+IO.puts "\nExample #3"
+IO.puts "User: Read #{queries[2]} ads."
+IO.puts "...reading #{queries[2]} ads..."
+buffer = Arrays.new([]) # Resetting the buffer
+{_, count, buffer} = AdServing.read(obj, buffer, queries[2])
+IO.puts "Ads count read by read(n): #{count}"
+IO.puts "Ads read by read(n): #{Enum.join(buffer, "")}"

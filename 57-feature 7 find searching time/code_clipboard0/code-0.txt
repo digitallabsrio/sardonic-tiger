@@ -1,0 +1,48 @@
+defmodule SearchEngine do
+    defp true_condition(serv_times, serv, stack, time) do
+        serv_times =
+            cond do
+                Arrays.size(stack) > 0 ->
+                    value = serv_times[stack[-1]] + String.to_integer(serv[2]) - time
+                    Arrays.replace(serv_times, stack[-1], value)
+                true -> serv_times
+            end
+
+        stack = stack |> Arrays.append(String.to_integer(serv[0]))
+        time = String.to_integer(serv[2])
+
+        {serv_times, stack, time}
+    end
+
+    def service_time(n, logs) do
+        stack = Arrays.new([])
+        serv_times = Arrays.new(List.duplicate(0, n))
+        serv = Arrays.new(logs[0] |> String.split(":"))
+        
+        stack = stack |> Arrays.append(String.to_integer(serv[0]))
+        time = String.to_integer(serv[2])
+
+        0..Arrays.size(logs)-1 
+        |> Enum.reduce({serv_times, stack, time}, fn(i, {serv_times, stack, time}) ->
+            serv = Arrays.new(logs[i] |> String.split(":"))
+            cond do
+                String.contains?(serv[1], "start") -> true_condition(serv_times, serv, stack, time)
+                true ->
+                    value = serv_times[stack[-1]] + String.to_integer(serv[2]) - time + 1
+                    serv_times = Arrays.replace(serv_times, stack[-1], value)
+                    
+                    {:ok, {_, stack}} = stack |> Arrays.extract
+                    time = String.to_integer(serv[2]) + 1
+
+                    {serv_times, stack, time}
+            end
+        end)
+        |> elem(0)
+        |> Arrays.to_list
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect SearchEngine.service_time(2, Arrays.new(["0:start:0","0:start:2","0:end:5","1:start:6","1:end:6","0:end:7"]))

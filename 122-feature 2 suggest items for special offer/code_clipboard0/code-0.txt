@@ -1,0 +1,51 @@
+defmodule SpecialOffer do
+    def suggest_three_products(item_prices) do
+        res = []
+        item_prices = Arrays.new(item_prices |> Enum.sort) 
+
+        0..Arrays.size(item_prices)-1
+        |> Enum.reduce_while(res, fn(i, res) ->
+            cond do
+                item_prices[i] > 200 -> {:halt, res}
+                i == 0 or item_prices[i - 1] != item_prices[i] -> {:cont, two_products(item_prices, i, res)}
+                true -> {:cont, res}
+            end
+        end)
+        |> :lists.reverse
+    end
+
+    def two_products(item_prices, i, res) do
+        seen = MapSet.new()
+        j = i + 1
+        update_res(item_prices, seen, res, Arrays.size(item_prices), i, j) 
+    end
+
+    defp update_res(_item_prices, _seen, res, size, _i, j) when j >= size, do: res
+    defp update_res(item_prices, seen, res, size, i, j) do
+        complement = 200 - item_prices[i] - item_prices[j]
+        {res, j} = 
+            cond do
+                MapSet.member?(seen, complement) ->
+                    res = [[item_prices[i], item_prices[j], complement] | res]
+                    j = update_j(item_prices, size, i, j)
+                    {res, j}
+                true -> {res, j}
+            end
+        seen = MapSet.put(seen, item_prices[j])
+        update_res(item_prices, seen, res, size, i, j+1)
+    end
+
+    defp update_j(item_prices, size, i, j) do
+        cond do
+           j + 1 < size and item_prices[j] == item_prices[j + 1] -> update_j(item_prices, size, i, j+1)
+           true -> j
+        end
+    end
+end
+
+## Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+item_prices = [100, 75, 150, 200, 50, 65, 40, 30, 15, 25, 60]
+IO.inspect SpecialOffer.suggest_three_products(item_prices), charlists: :as_lists

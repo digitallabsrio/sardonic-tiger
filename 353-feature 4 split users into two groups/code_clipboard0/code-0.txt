@@ -1,0 +1,35 @@
+defmodule Follows do
+    def dfs(graph, color, pos) do
+        graph[pos]
+        |> Enum.reduce_while(true, fn(i, res) ->
+            cond do
+                Map.has_key?(color, i) ->
+                    if color[i] == color[pos], do: {:halt, false}, else: {:cont, res}
+
+                true ->
+                    color = Map.put(color, i, 1 - color[pos])
+                    if !dfs(graph, color, i), do: {:halt, false}, else: {:cont, res}
+            end
+        end)
+    end
+
+    def is_split_possible(graph) do
+        color = %{}
+        0..Arrays.size(graph)-1
+        |> Enum.reduce_while(true, fn(i, res) ->
+            cond do
+                !Map.has_key?(color, i) ->
+                    color = Map.put(color, i, 0)
+                    if !dfs(graph, color, i), do: {:halt, false}, else: {:cont, res}
+                true -> {:cont, res}
+            end
+        end)
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+graph = Arrays.new([[3], [2, 4], [1], [0, 4], [1, 3]])
+IO.inspect Follows.is_split_possible(graph)

@@ -1,0 +1,49 @@
+defmodule Solution do
+  def find_intervals(prices, stack, intervals, current_price, curr_inter) do
+    cond do
+      length(stack) > 0 and prices[List.first(stack)] < current_price ->
+        [prev_inter | stack] = stack
+
+        intervals = Arrays.replace(intervals, prev_inter, curr_inter - prev_inter)
+        find_intervals(prices, stack, intervals, current_price, curr_inter)
+
+      true -> {stack, intervals}
+    end
+  end
+
+  def find_intervals(prices) do
+    # number of predicted prices in the time window
+    n = Arrays.size(prices)
+    intervals = Arrays.new(List.duplicate(0, n))
+
+    # initialize a stack to store the indices of the intervals
+    stack = []
+
+    # iterate over the prices
+    0..n-1 
+    |> Enum.reduce({stack, intervals}, fn(curr_inter, {stack, intervals}) ->
+      # current intervals predicted price
+      current_price = prices[curr_inter]
+
+      # check if the stack is empty or not and also 
+      # check if the price at current interval is higher than 
+      # the interval's price at top of the stack
+      {stack, intervals} = find_intervals(prices, stack, intervals, current_price, curr_inter)
+      
+      # push the current index onto the stack
+      stack = [curr_inter | stack]
+
+      {stack, intervals}
+    end)
+    |> elem(1)
+    |> Arrays.to_list    
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT "
+
+prices = Arrays.new([68,71,78,67,66,69,79,68])
+intervals = Solution.find_intervals(prices)
+IO.puts "Minimum Intervals: #{inspect intervals}"

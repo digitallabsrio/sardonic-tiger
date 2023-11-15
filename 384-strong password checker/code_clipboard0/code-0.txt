@@ -1,0 +1,5 @@
+defmodule Solution do
+  def strong_password_checker(_password) do
+    # Write your code here
+  end
+end

@@ -1,0 +1,17 @@
+defmodule Solution do
+  def quick_pow(_base, 0), do: 1
+  def quick_pow(base, power) do
+    half = quick_pow(base, div(power, 2))
+    if rem(power, 2) == 0, do: half * half, else: half * half * base
+  end
+
+  def pow(base, power) do
+    {base, power} = if power < 0, do: {1 / base, -power}, else: {base, power}
+    quick_pow(base, power)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.pow(2, 4)

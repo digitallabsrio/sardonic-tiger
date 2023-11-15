@@ -1,0 +1,57 @@
+defmodule Solution do
+  def idle_time(p, q, dummy, carry) do
+    cond do
+      p != nil or q != nil ->
+        x = if p != nil, do: p.val, else: 0
+        y = if q != nil, do: q.val, else: 0
+        sum = carry + x + y
+        carry = div(sum, 10)
+
+        curr = LinkedListNode.init(rem(sum, 10))
+
+        p = if p != nil, do: p.next, else: p
+        q = if q != nil, do: q.next, else: q
+
+        if dummy == nil, 
+          do: idle_time(p, q, curr, carry), 
+          else: %LinkedListNode{dummy | next: idle_time(p, q, curr, carry)}
+      
+      true ->
+        case carry do
+          n when n > 0 -> %LinkedListNode{dummy | next: LinkedListNode.init(carry)}
+          _ ->  dummy
+        end     
+    end
+  end
+
+  def idle_time(list1, list2) do
+    p = list1
+    q = list2
+    carry = 0
+
+    idle_time(p, q, nil, carry)
+  end
+end
+
+defmodule Main do
+  def main do
+    # Driver code
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    list1 = LinkedListNode.init(9)
+    list1 = %LinkedListNode{list1 | next: LinkedListNode.init(9)}
+
+    next_val = %LinkedListNode{list1.next | next: LinkedListNode.init(9)}
+    list1 = %LinkedListNode{list1 | next: next_val}
+
+    list2 = LinkedListNode.init(9)
+    list2 = %LinkedListNode{list2 | next: LinkedListNode.init(9)}
+
+    next_val2 = %LinkedListNode{list2.next | next: LinkedListNode.init(9)}
+    list2 = %LinkedListNode{list2 | next: next_val2}
+
+    dummy = Solution.idle_time(list1, list2)
+    IO.inspect dummy |> Helper.print
+  end
+end

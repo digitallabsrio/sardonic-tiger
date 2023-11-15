@@ -1,0 +1,82 @@
+defmodule Solution do
+  # Use backtrack function to generate all possible combinations
+  def backtrack(categories, combinations, movies, index, path) do
+    cond do
+      # If the length of path and categories is same, 
+      # we have a complete combinations
+      Arrays.size(path) == Arrays.size(categories) -> [Enum.join(path, "") | combinations]
+
+      true ->
+        # Using the index and categories[index], get the list of movies
+        possible_movies = movies[to_string(categories[index])]
+
+        # Loop through the movies and generate combinations
+        possible_movies 
+        |> Enum.reduce({path,combinations} , fn (p, {path,combinations}) -> 
+          # Add the movie to our current path
+          new_path = path |> Arrays.append(to_string(p) <> ";")
+
+          # Move on to the next category
+          combinations = backtrack(categories, combinations, movies, index + 1, new_path)
+
+          {path, combinations}
+        end)
+        |> elem(1)
+    end
+  end
+
+  def letterCombinations(categories) do
+    cond do
+      # Return empty array if input is empty
+      Arrays.size(categories) == 0 -> []
+      true ->
+        # Mapping the categories to their corresponding movies
+        movies = %{
+          "Family" => ["Frozen","Kung fu Panda", "Ice Age" ], 
+          "Action" => ["Iron Man","Wonder Woman","Avengers"],
+          "Fantasy" => ["Jumangi", "Lion King", "Tarzan"],
+          "Comedy" => ["Coco", "The Croods", "Vivi","Pets"],
+          "Horror" => ["Oculus", "Sinister","Insidious","Annebelle"]
+        }
+
+        # Declaring the combinations variable
+        combinations = []
+
+        # Initiate backtracking with an empty path and starting index of 0
+        path = Arrays.new([])
+        backtrack(categories, combinations, movies, 0, path) |> :lists.reverse
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+categories = Arrays.new(["Action"])
+combinations = Solution.letterCombinations(categories)
+output = to_string(combinations |> Enum.join("','"))
+IO.puts "Output 1:"
+IO.inspect output
+
+# Example 2
+categories = Arrays.new(["Family", "Action"])
+combinations = Solution.letterCombinations(categories)
+output = to_string(combinations |> Enum.join("','"))
+IO.puts "Output 2:"
+IO.inspect output
+
+# Example 3
+categories = Arrays.new(["Horror", "Comedy"])
+combinations = Solution.letterCombinations(categories)
+output = to_string(combinations |> Enum.join("','"))
+IO.puts "Output 3:"
+IO.inspect output
+
+# Example 4
+categories = Arrays.new(["Horror", "Fantasy", "Comedy", "Family"])
+combinations = Solution.letterCombinations(categories)
+output = to_string(combinations |> Enum.join("','"))
+IO.puts "Output 4:"
+IO.inspect output

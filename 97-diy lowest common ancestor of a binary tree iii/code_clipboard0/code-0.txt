@@ -1,0 +1,6 @@
+defmodule Solution do
+  def lowest_common_ancestor(_node1, _node2) do
+    # Write your code here
+    -1
+  end
+end

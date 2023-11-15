@@ -1,0 +1,17 @@
+defmodule BSTIterator do
+  defstruct []
+
+  def init(_root) do
+    # write your code here
+  end
+
+  def has_next(_obj) do
+    # write your code here
+    false
+  end
+
+  def next(obj) do
+    # write your code here
+    {obj, -1}
+  end
+end

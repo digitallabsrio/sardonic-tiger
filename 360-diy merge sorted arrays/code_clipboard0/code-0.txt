@@ -1,0 +1,6 @@
+defmodule Solution do
+  def merge_sorted(nums1, _m, _nums2, _n) do
+    # write your code here
+    nums1
+  end
+end  

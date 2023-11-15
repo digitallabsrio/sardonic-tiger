@@ -1,0 +1,91 @@
+defmodule Solution do
+  def smallest_sequence(list_a, list_b) do
+    cond do
+      # Returns an empty list if one or more list is empty.
+      !list_a or !list_b -> []
+      true ->
+        # We will use this dictionary to keep a count of all unique topics in list b.
+        dict_list_b = list_b |> Enum.frequencies
+
+        # This will hold the count of number of unique topics in list b.
+        count_unique_b = map_size(dict_list_b)
+
+        # unique_characters keeps a count of the number of unique characters of list_b which are present in the current with its required frequency.
+        unique_characters = 0
+
+        # This dictionary holds the count of all the unique topics in the current window.
+        unique_topics = %{}
+
+        # Checks and appends a topic along with its index from list A in sifted list, if the topic is present in list B.
+        sifted_list_a = 
+          list_a 
+          |> Enum.with_index 
+          |> Enum.reduce(Arrays.new(), fn({topic, i}, sifted_list_a) ->
+            if Map.has_key?(dict_list_b, topic), do: Arrays.append(sifted_list_a, {i, topic}), else: sifted_list_a
+          end)
+
+        # A tuple that is used to store the window length, left, right
+        tuple_wllr = {'inf', nil, nil}
+
+        # Left and right pointers
+        left = right = 0
+
+        # Look for the topics only in the filtered list instead of entire list.
+        filter_topics(list_a, sifted_list_a, dict_list_b, count_unique_b, tuple_wllr, unique_topics, unique_characters, left, right)
+    end
+  end
+
+  def filter_topics(list_a, sifted_list_a, dict_list_b, count_unique_b, tuple_wllr, unique_topics, unique_characters, left, right) do
+    cond do
+      right < Arrays.size(sifted_list_a) ->
+        # Add one topic from the right to the window
+        topic = elem(sifted_list_a[right], 1)
+        unique_topics = Map.put(unique_topics, topic, Map.get(unique_topics, topic, 0)+1)
+
+        # Checking the frequency of the currently added topic.
+        # If it is equal to the desired count in our list_b then we are incrementing the value of unique_characters.
+        unique_characters = if unique_topics[topic] == dict_list_b[topic], do: unique_characters + 1, else: unique_characters
+        {unique_topics, unique_characters, tuple_wllr, left} = topic_freq(sifted_list_a, dict_list_b, count_unique_b, unique_topics, tuple_wllr, unique_characters, left, right)
+
+        # Moving the right pointer ahead.
+        filter_topics(list_a, sifted_list_a, dict_list_b, count_unique_b, tuple_wllr, unique_topics, unique_characters, left, right+1)
+
+        # If the current window has all the topics in desired frequencies i.e. it is present in the window
+      true -> if elem(tuple_wllr, 0) == 'inf', do: [], else: Enum.slice(list_a, elem(tuple_wllr, 1)..elem(tuple_wllr, 2))
+    end
+  end
+
+  def topic_freq(sifted_list_a, dict_list_b, count_unique_b, unique_topics, tuple_wllr, unique_characters, left, right) do
+    cond do
+      left <= right and unique_characters == count_unique_b ->
+        topic = elem(sifted_list_a[left], 1)
+
+        # Save the smallest window until now.
+        end_sequence = elem(sifted_list_a[right], 0)
+        start_sequence = elem(sifted_list_a[left], 0)
+        tuple_wllr = 
+          cond do
+            end_sequence - start_sequence + 1 < elem(tuple_wllr, 0) ->
+              {end_sequence - start_sequence + 1, start_sequence, end_sequence}
+            true -> tuple_wllr
+          end
+
+        # The character at the position pointed by the `left` pointer is no longer a part of the window.
+        unique_topics = Map.put(unique_topics, topic, unique_topics[topic] - 1)
+        unique_characters = if unique_topics[topic] < dict_list_b[topic], do: unique_characters - 1, else: unique_characters
+        
+        # Moving the left pointer ahead.
+        topic_freq(sifted_list_a, dict_list_b, count_unique_b, unique_topics, tuple_wllr, unique_characters, left+1, right)
+
+      true -> {unique_topics, unique_characters, tuple_wllr, left}
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+a = ["corona","petrol","corona","corona","climate","petrol","corona","petrol"]
+b = ["corona","petrol","climate"]
+IO.inspect Solution.smallest_sequence(a, b)

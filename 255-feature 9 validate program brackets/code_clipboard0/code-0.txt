@@ -1,0 +1,56 @@
+defmodule Solution do
+  defp find_topmost(stack) do
+    cond do
+      Arrays.size(stack) > 0 -> 
+        {:ok, {elem, stack}} = stack |> Arrays.extract
+        {elem, stack}
+
+      true -> {-1, stack}
+    end
+  end
+
+  def valid(string) do
+    stack = Arrays.new([])
+
+    matches = %{
+        "}" => "{",
+        "]" => "[",
+        ")" => "(",
+    }
+
+    extra_char = %{
+      "}" => "}",
+      "]" => "]",
+      ")" => ")",
+      "{" => "{",
+      "[" => "[",
+      "(" => "("
+    }
+
+    {res, stack} = 
+      0..byte_size(string)-1 
+      |> Enum.reduce_while({true, stack}, fn(i, {res, stack}) ->
+        c = String.at(string, i)
+
+        cond do
+          !Map.has_key?(extra_char, c) -> {:cont, {res, stack}}
+          Map.has_key?(matches, c) -> 
+            
+            {elem, new_stack} = find_topmost(stack)
+            {top, stack} = if Arrays.size(stack) == 0, do: {"#", stack}, else: {elem, new_stack}
+
+            if top != matches[c], do: {:halt, {false, stack}}, else: {:cont, {res, stack}}
+          true -> {:cont, {res, stack |> Arrays.append(c)}}
+        end
+      end)
+
+    if res == false, do: false, else: Arrays.size(stack) == 0
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+string = "let output = function () { console.log('Anonymous function'); };"
+IO.inspect Solution.valid(string)

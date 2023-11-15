@@ -1,0 +1,63 @@
+defmodule LRUStructure do
+  defstruct capacity: nil, cache_vals: OrdMap.new()
+  def init(capacity), do: %__MODULE__{capacity: capacity}
+
+  def get(obj, key) do
+    cond do
+      key not in OrdMap.keys(obj.cache_vals) -> {obj, -1}
+      true ->
+        {v, cache_vals} = OrdMap.pop(obj.cache_vals, key)
+        obj = %__MODULE__{obj | cache_vals: OrdMap.put(cache_vals, key, v)}
+        {obj, v}
+    end
+  end
+
+  def set(obj) when obj.capacity > 0, do: %__MODULE__{obj | capacity: obj.capacity - 1}
+  def set(obj) do
+    key =  hd(OrdMap.keys(obj.cache_vals))
+    {_, cache_vals} = OrdMap.pop(obj.cache_vals, key)
+    %__MODULE__{obj | cache_vals: cache_vals}
+  end
+
+  def set(obj, key, value) do
+    obj = 
+      cond do
+        key in OrdMap.keys(obj.cache_vals) -> 
+          {_, cache_vals} = OrdMap.pop(obj.cache_vals, key)
+          %__MODULE__{obj | cache_vals: cache_vals}
+        true ->
+          set(obj)
+      end
+
+    %__MODULE__{obj | cache_vals: OrdMap.put(obj.cache_vals, key, value)}
+  end
+
+  def print_dict(obj) do
+    obj.cache_vals 
+    |> Enum.each(fn {k, v} -> IO.write "(#{k}, #{v})" end)
+    IO.puts("")
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.puts("The most recent watched titles are: (key, value)")
+obj = LRUStructure.init(3)
+obj = obj |> LRUStructure.set(10, 20)
+obj |> LRUStructure.print_dict
+
+obj = obj |> LRUStructure.set(15, 25)
+obj |> LRUStructure.print_dict
+
+obj = obj |> LRUStructure.set(20, 30)
+obj |> LRUStructure.print_dict
+
+obj = obj |> LRUStructure.set(25, 35)
+obj |> LRUStructure.print_dict
+
+obj = obj |> LRUStructure.set(5, 40)
+obj |> LRUStructure.print_dict
+
+{obj, _} = obj |> LRUStructure.get(25)
+obj |> LRUStructure.print_dict

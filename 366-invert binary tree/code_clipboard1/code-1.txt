@@ -1,0 +1,25 @@
+defmodule Trees do
+  def invert_tree(root) when root == nil, do: root
+  def invert_tree(root) do
+    right = invert_tree(root.right)
+    left = invert_tree(root.left)
+    %TreeNode{root | left: right, right: left}
+  end
+end
+
+# Driver Code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    root = TreeNode.init(1)
+    root = %TreeNode{root | left: TreeNode.init(2)}
+    root = %TreeNode{root | right: TreeNode.init(3)}
+    root = %TreeNode{root | left: %TreeNode{root.left | left: TreeNode.init(4)}}
+    root = %TreeNode{root | left: %TreeNode{root.left | right: TreeNode.init(5)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init(6)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init(7)}}
+    Printing.print_tree(Trees.invert_tree(root))
+  end
+end

@@ -1,0 +1,5 @@
+defmodule Solution do
+  def exclusive_time(_n, _logs) do
+    # write your code here
+  end
+end

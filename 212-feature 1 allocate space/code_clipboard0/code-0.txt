@@ -1,0 +1,22 @@
+defmodule MyProcess do
+  def allocate_space(processes, new_p) do
+    count = sum = 0
+    res = Map.new |> Map.put(0, 1)
+
+    processes 
+    |> Enum.reduce({res, sum, count}, fn(size, {res, sum, count}) ->
+      sum = sum + size
+      count = if Map.has_key?(res, sum - new_p), do: count + res[sum - new_p], else: count
+      res = if Map.has_key?(res, sum), do: Map.put(res, sum, res[sum] + 1), else: Map.put(res, sum, 1)
+      {res, sum, count}
+    end)
+    |> elem(2)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+processes = [1,2,3,4,5,6,7,1,23,21,3,1,2,1,1,1,1,1,12,2,3,2,3,2,2]
+IO.inspect MyProcess.allocate_space(processes, 1)

@@ -1,0 +1,5 @@
+defmodule Construct_Binary_Tree do
+  def build_binary_tree(_preorder, _inorder) do
+    # write your code here
+  end
+end

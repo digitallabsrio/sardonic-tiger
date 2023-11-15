@@ -1,0 +1,5 @@
+defmodule Solution do
+  def distanceK(_root, _target, _k) do
+    # write your code here
+  end
+end

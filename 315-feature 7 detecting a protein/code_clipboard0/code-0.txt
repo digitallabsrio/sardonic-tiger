@@ -1,0 +1,44 @@
+defmodule Solution do
+  def is_protein(s) do
+    # Create a map to keep track of the nucleotides and their occurences
+    map = Map.new()
+
+    # Traverse the sequence and create a new entry for every new nucleotide found.
+    # If a nucleotide, that is already in the map, is found, get its current 
+    # occurence and increment 1 to it. 
+    map =  
+      0..String.length(s)-1 
+      |> Enum.reduce(map, fn(i, map) ->
+        occurence = Map.get(map, String.at(s, i), 0) + 1
+        Map.put(map, String.at(s, i), occurence)
+      end)
+
+    count = 0
+
+    # Traverse the map and update the count by 1, whenever a 
+    # nucleotide with odd number of occurences is found.
+    count = 
+      Map.keys(map) 
+      |> Enum.reduce(count, fn (nuc, count) ->
+        count + rem(Map.get(map, nuc), 2)
+      end)
+
+    if count <=1, do: true, else: false
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+sequence = "baefeab"
+is_protein = Solution.is_protein(sequence);
+IO.puts "Input: #{sequence}"
+IO.puts "Output: #{is_protein}\n"
+
+# Example 2
+sequence = "abc"
+is_protein = Solution.is_protein(sequence);
+IO.puts "Input: #{sequence}"
+IO.puts "Output: #{is_protein}"

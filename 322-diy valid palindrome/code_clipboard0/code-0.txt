@@ -1,0 +1,5 @@
+defmodule Solution do
+  def is_palindrome(_s) do
+    # write your code here
+  end
+end

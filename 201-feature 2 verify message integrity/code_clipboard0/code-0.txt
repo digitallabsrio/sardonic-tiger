@@ -1,0 +1,61 @@
+defmodule Solution do
+  def verify_message_integrity(messages, key_map, res, i) do
+    0..byte_size(messages[0])-1
+    |> Enum.reduce_while(res, fn(j, res) ->
+      # If we do not find a mismatch letter between messages[i] and messages[i + 1],
+      # we need to examine the case when messages are like ("educated", "educate").
+      cond do
+        j >= byte_size(messages[i + 1]) -> {:halt, false}
+        String.at(messages[i], j) != String.at(messages[i+1], j) ->
+          cond do
+            key_map[String.at(messages[i], j)] > key_map[String.at(messages[i+1], j)] ->
+              {:halt, false}
+
+            # if we find the first different character and they are sorted,
+            # then there's no need to check remaining letters
+            true -> {:halt, res}
+          end
+        true -> {:cont, res}
+      end
+    end)  
+  end
+
+  def verify_message_integrity(messages, key_map, res) do
+    0..Arrays.size(messages)-2 
+    |> Enum.reduce_while(res, fn(i, res) ->
+      res = verify_message_integrity(messages, key_map, res, i)
+      if res == false, do: {:halt, false}, else: {:cont, res}
+    end)
+  end
+
+  def verify_message_integrity(messages, dictionary) do
+    size = Arrays.size(messages)
+    cond do
+      size == 1 -> true 
+      true ->
+        key_map = %{}
+
+        key_map = 
+          0..byte_size(dictionary)-1 
+          |> Enum.reduce(key_map, fn(i, key_map) ->
+            Map.put(key_map, String.at(dictionary, i), i)
+          end)
+
+        verify_message_integrity(messages, key_map, true)
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+messages = Arrays.new(["alpha", "bravo", "charlie", "delta"])
+dictionary = "abcdlpite"
+IO.inspect Solution.verify_message_integrity(messages, dictionary)
+
+# Example 2
+messages2 = Arrays.new(["apple", "app"])
+dictionary = "apple"
+IO.inspect Solution.verify_message_integrity(messages2, dictionary)

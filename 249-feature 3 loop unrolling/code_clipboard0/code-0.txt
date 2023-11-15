@@ -1,0 +1,60 @@
+defmodule Compiler do
+  defp check_integer(str) do
+    case Integer.parse(str) do
+      {_, ""} -> :number
+      _ -> :text
+    end
+  end
+
+  def loop_unrolling(code_block) do
+    count_stack = []
+    statement_stack = []
+    current_statement = ""
+    n = 0
+
+    code_block
+    |> String.graphemes
+    |> Enum.reduce({count_stack, statement_stack, current_statement, n}, 
+    fn(ch, {count_stack, statement_stack, current_statement, n}) ->
+      cond do
+        check_integer(ch) == :number ->
+          n = n * 10 + String.to_integer(ch)
+          {count_stack, statement_stack, current_statement, n}
+        
+        String.equivalent?(ch, "[") ->
+          # push the number n to count_stack
+          count_stack = [n | count_stack]
+          statement_stack = [current_statement | statement_stack]
+          # reset current_statement and n
+          {count_stack, statement_stack, "", 0}
+
+        String.equivalent?(ch, "]") ->
+          [unroll_statement | statement_stack] = statement_stack
+          # unroll current_n[current_statement] by appending current_statement n times
+          [current_n | count_stack] = count_stack
+          current_statement = update_current_statement(unroll_statement, current_statement, current_n)
+          {count_stack, statement_stack, current_statement, n}
+        
+        true -> 
+          current_statement = current_statement <> ch
+          {count_stack, statement_stack, current_statement, n}
+      end
+    end)
+    |> elem(2)
+  end
+
+  defp update_current_statement(unroll_statement, current_statement, current_n) do
+    cond do
+      current_n > 0 -> 
+        unroll_statement = unroll_statement <> current_statement
+        update_current_statement(unroll_statement, current_statement, current_n-1)
+ 
+      true -> unroll_statement
+    end
+  end
+end
+
+# Driver code  
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Compiler.loop_unrolling("2[sum = sum + i; 2[i++; ]]")

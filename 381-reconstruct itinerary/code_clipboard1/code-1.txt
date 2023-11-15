@@ -1,0 +1,37 @@
+defmodule Solution do
+  def dfs(_map, result, nil), do: result
+  def dfs(map, result, node) do
+    {next_node, map} =
+      case map[node] do
+        [top | rest] -> {top, Map.put(map, node, rest)}
+        [] -> {nil, map}
+        nil -> {nil, map}
+      end
+      
+    result = dfs(map, result, next_node)
+    [node | result]
+  end
+
+  def detect_itinerary(tickets) do
+    map = %{}
+    result = []
+
+    map = 
+      tickets 
+      |> Enum.reduce(map, fn([dep, des], map) ->
+        map_dep = Map.get(map, dep, [])
+        if map_dep, do: Map.update(map, dep, [des], &([des | &1])), else: Map.put(map, dep, [des])
+      end)
+
+    map = for {key, value} <- map, into: %{}, do: {key, Enum.sort(value)}
+
+    dfs(map, result, "JFK")
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+arr = [["JFK","ATI"],["ATI","LHR"],["SAC","SJF"],["LHR","SAC"]]
+IO.inspect Solution.detect_itinerary(arr)

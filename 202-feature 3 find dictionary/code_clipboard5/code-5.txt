@@ -1,0 +1,115 @@
+defmodule Solution do
+  alias Okasaki.Deque, as: Deque
+  def update_data_structures(adj_list, counts, message) do
+    case String.next_grapheme(message) do
+      nil -> {adj_list, counts}
+
+      {c, rest} ->
+        counts = Map.put(counts, c, 0)
+        adj_list = Map.put(adj_list, c, MapSet.new())
+        update_data_structures(adj_list, counts, rest)
+    end
+  end
+
+  def find_edges(adj_list, counts, []), do: {:ok, adj_list, counts}
+  def find_edges(adj_list, counts, [_message1]), do: {:ok, adj_list, counts}
+  def find_edges(adj_list, counts, [message1, message2 | rest]) do
+    cond do
+      byte_size(message1) > byte_size(message2) and String.contains?(message1, message2) ->  {:empty, adj_list, counts}
+      true ->
+        # Find the first non matching letter and insert the corresponding relation.
+        {adj_list, counts, _, _} = 
+          0..min(byte_size(message1), byte_size(message2))-1
+          |> Enum.reduce_while({adj_list, counts, message1, message2}, 
+          fn(_, {adj_list, counts, message1, message2}) ->
+            <<first_m1::utf8, rest_m1::binary>> = message1 
+            <<first_m2::utf8, rest_m2::binary>> = message2
+
+            cond do
+              !String.equivalent?(<<first_m1::utf8>>, <<first_m2::utf8>>) ->
+                cond do
+                  !MapSet.member?(adj_list[<<first_m1::utf8>>], <<first_m2::utf8>>) ->
+                    counts = Map.put(counts, <<first_m2::utf8>>, counts[<<first_m2::utf8>>]+1)
+                    new_set = MapSet.new([<<first_m2::utf8>>])
+                    adj_list = Map.update(adj_list, <<first_m1::utf8>>, new_set, fn curr_set -> 
+                      MapSet.union(curr_set, new_set)
+                    end)
+
+                    {:halt, {adj_list, counts, <<rest_m1::binary>>, <<rest_m2::binary>>}}
+
+                  true ->  {:halt, {adj_list, counts, <<rest_m1::binary>>, <<rest_m2::binary>>}}
+                end
+
+              true -> {:cont, {adj_list, counts, <<rest_m1::binary>>, <<rest_m2::binary>>}}
+            end
+          end)
+
+      find_edges(adj_list, counts, [message2 | rest])
+    end
+  end
+
+  def queue_check(adj_list, counts, queue, result) do
+    cond do
+      Deque.size(queue) > 0 ->
+        {:ok, {c, queue}} = Deque.remove_left(queue)
+        result = [c | result]
+
+        {counts, queue} = 
+          adj_list[c] 
+          |> Enum.reduce({counts, queue}, fn(next, {counts, queue}) ->
+            counts = Map.put(counts, next, counts[next]-1)
+            queue = if counts[next] == 0, do: Deque.insert_right(queue, next), else: queue
+            
+            {counts, queue}
+          end)
+
+        queue_check(adj_list, counts, queue, result)
+
+      true -> {counts, result}
+    end
+  end
+  
+  def find_dictionary(messages) do
+    # Step 0: Create data structures and find all unique letters.
+    adj_list = %{}
+    counts = %{}   
+     
+    {adj_list, counts} = 
+      messages |> Enum.reduce({adj_list, counts}, fn(message, {adj_list, counts}) ->
+        update_data_structures(adj_list, counts, message)
+      end)
+
+    # Step 1: Find all edges.
+    {check, adj_list, counts} = find_edges(adj_list, counts, messages)
+    cond do
+      check == :empty -> ""
+      true -> 
+        # Step 2: Breadth-first search.
+        result = []
+        queue = Deque.new()
+        queue = 
+          counts 
+          |> Enum.reduce(queue, fn({k, v}, queue) -> 
+            if v == 0, do: Deque.insert_right(queue, k), else: queue
+          end)
+
+        {counts, result} = queue_check(adj_list, counts, queue, result)
+        # # If not all letters are in result, that means there was a cycle and so
+        # # no valid ordering. Return "".
+        # # Otherwise, convert the ordering we found into a string and return it.
+        if length(result) < map_size(counts), do: "", else: :lists.reverse(result) |> Enum.join("")
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example - 1
+messages = ["mzosr", "mqov", "xxsvq", "xazv", "xazau", "xaqu", "suvzu", "suvxq", "suam", "suax", "rom", "rwx", "rwv"]
+IO.puts "Dictionary = #{Solution.find_dictionary(messages)}"
+
+# Example - 2
+messages = ["vanilla", "alpine", "algor", "port", "norm", "nylon", "ophellia", "hidden"]
+IO.puts "Dictionary = #{Solution.find_dictionary(messages)}"

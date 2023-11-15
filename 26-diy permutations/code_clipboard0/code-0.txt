@@ -1,0 +1,6 @@
+defmodule Solution do
+  def permute(_nums) do
+    # Write your code here
+    []
+  end
+end

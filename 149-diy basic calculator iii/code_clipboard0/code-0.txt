@@ -1,0 +1,6 @@
+defmodule Solution do
+  def string_calculate(_s) do
+    # write your code here
+    -1
+  end
+end

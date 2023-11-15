@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_kth_largest(_arr, _k) do
+    # write your code here
+    -1
+  end
+end

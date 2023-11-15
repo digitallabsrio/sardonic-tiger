@@ -1,0 +1,5 @@
+defmodule Solution do
+  def intervals_intersection(_intervals_a, _intervals_b) do
+    # write your code here
+  end
+end

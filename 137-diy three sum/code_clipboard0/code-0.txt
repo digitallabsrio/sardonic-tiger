@@ -1,0 +1,5 @@
+defmodule Solution do
+  def three_sum(_numbers) do
+    # write your code here
+  end
+end

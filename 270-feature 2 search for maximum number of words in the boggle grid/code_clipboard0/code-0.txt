@@ -1,0 +1,69 @@
+defmodule BoggleGrid do
+  def search_words(grid, words) do
+    d = Trie.init
+    result = Arrays.new([])
+
+    # Inserting words in dictionary
+    d = words |> Enum.reduce(d, fn(word, d) -> d |> Trie.insert(word) end)
+
+    # Calling dfs for all the cells in the grid
+    0..4 
+    |> Enum.reduce(result, fn(i, result) ->
+      0..4 
+      |> Enum.reduce(result, fn(j, result) ->
+        dfs(d.root, grid, i, j, result)
+      end)
+    end)
+  end
+
+  def dfs(node, grid, row, col, result, word \\ "") do
+    # Checking if we found the word
+    {node, result} = 
+      cond do
+        node.is_word == true -> 
+          result = result |> Arrays.append(word)
+          node = %TrieNode{node | is_word: false}
+          {node, result}
+
+        true -> {node, result}
+      end
+
+    cond do
+      0 <= row and row < 5 and 0 <= col and col < 5 ->
+        char = (grid[row])[col]
+        child = Map.get(node.children, char)
+
+        cond do
+          char != '#' and child != nil ->
+            word = word <> char
+            # Marking it as visited before exploration
+            new_grid = Arrays.replace(grid, row, Arrays.replace(grid[row], col, nil))
+
+            # explore the four neighboring directions
+            [{0, 1}, {1, 0}, {0, -1}, {-1, 0}] 
+            |> Enum.reduce(result, fn({row_offset, col_offset}, result) ->
+              dfs(child, new_grid, row + row_offset, col + col_offset, result, word)
+            end)
+
+          true -> result
+        end
+
+      true -> result
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+grid = Arrays.new([
+  Arrays.new(["B", "S", "L", "I", "M"]), 
+  Arrays.new(["R", "I", "L", "M", "O"]), 
+  Arrays.new(["O", "L", "I", "E", "O"]), 
+  Arrays.new(["R", "Y", "I", "L", "N"]), 
+  Arrays.new(["B", "U", "N", "E", "C"])
+])
+
+words = ["BUY", "SLICK", "SLIME", "ONLINE", "NOW"]
+IO.inspect BoggleGrid.search_words(grid, words) |> Enum.uniq

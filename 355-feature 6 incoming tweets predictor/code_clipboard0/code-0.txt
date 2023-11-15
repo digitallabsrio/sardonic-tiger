@@ -1,0 +1,39 @@
+defmodule TweetsPredictor do
+  alias Okasaki.Deque, as: Deque
+
+  defstruct size: nil, queue: Deque.new(), len_queue: 0, window_sum: 0
+  def init(size), do: %__MODULE__{size: size}
+
+  def predict_tweets(obj, val) do
+    {pop_val, obj} = 
+      cond do
+        obj.len_queue == obj.size -> 
+          {:ok, {pop_val, _}} = Deque.remove_left(obj.queue)
+
+          {pop_val, obj}
+        true ->
+          obj = %__MODULE__{obj | len_queue: obj.len_queue + 1}
+          {0, obj}
+      end
+
+    queue = obj.queue |> Deque.insert_right(val)
+    window_sum = obj.window_sum + val - pop_val
+    obj = %__MODULE__{obj | queue: queue, window_sum: window_sum}
+
+    {obj.window_sum / obj.len_queue, obj}
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+values = [1,10,3,5]
+count_tweets = TweetsPredictor.init(3)
+
+values |> Enum.reduce(count_tweets, fn i, count_tweets -> 
+  {average, count_tweets}  = count_tweets |> TweetsPredictor.predict_tweets(i)
+  IO.inspect average
+
+  count_tweets
+end)

@@ -1,0 +1,108 @@
+defmodule FileClass do
+  defstruct is_file: false, content: "", files: %{}
+  def init, do: %__MODULE__{}
+end
+
+defmodule FileSystem do
+  defstruct root: FileClass.init
+  def init, do: %__MODULE__{}
+
+  def ls_recrusive([], t), do: t
+  def ls_recrusive([head | tail], t) do
+    t = t.files[head]
+    ls_recrusive(tail, t)
+  end
+
+  def ls(obj, path) do
+    t = obj.root
+    files = []
+    cond do
+      path != "/" ->
+        d = String.split(path, "/")
+        d = d |> Enum.slice(1..length(d)-1)
+        t = ls_recrusive(d, t)
+
+        cond do
+          t.is_file -> [Enum.at(d, length(d)-1) | files]
+          true -> t.files |> Map.keys |> Enum.sort
+        end
+
+      true -> t.files |> Map.keys |> Enum.sort
+    end
+  end
+
+  defp node_creater_getter(node, key) do
+      node.files 
+      |> Map.put_new(key, FileClass.init) 
+      |> Map.get(key)
+  end
+
+  def mkdir_recursive(node, [head | tail]) do
+      child = node_creater_getter(node, head)
+      child = mkdir_recursive(child, tail)
+      %FileClass{node | files: Map.put(node.files, head, child)}
+  end
+
+  def mkdir_recursive(node, []), do: node
+
+  def mkdir(obj, path) do
+    t = obj.root
+    d = String.split(path, "/")
+    d = d |> Enum.slice(1..length(d)-1)
+    t = mkdir_recursive(t, d)
+
+    %__MODULE__{obj | root: t}
+  end
+
+  def add_content(node, [], content) do 
+    %FileClass{node | is_file: true, content: node.content <> content}
+  end
+  def add_content(node, [head | tail], content) do
+      child = node_creater_getter(node, head)
+      child = add_content(child, tail, content)
+      %FileClass{node | files: Map.put(node.files, head, child)}
+  end
+
+  def add_content_to_file(obj, filePath, content) do
+    t = obj.root
+    d = String.split(filePath, "/") 
+    d = d |> Enum.slice(1..length(d)-1)
+    t = add_content(t, d, content)
+
+    %__MODULE__{obj | root: t}
+  end
+
+  defp node_getter(node, key), do: node.files |> Map.get(key)
+
+  def read_recursive([], t), do: t
+  def read_recursive([head | tail], t) do
+    child = node_getter(t, head)
+    read_recursive(tail, child)
+  end
+
+  def read_content_from_file(obj, filePath) do
+    t = obj.root
+    d = String.split(filePath, "/") 
+    d = d |> Enum.slice(1..length(d)-1)
+    read_recursive(d, t).content
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+fs = FileSystem.init
+IO.inspect fs |> FileSystem.ls("/")
+
+fs = 
+  fs 
+  |> FileSystem.mkdir("/dir1/dir2/dir3") 
+  |> FileSystem.mkdir("/dir4/dir2/dir3")
+IO.inspect fs |> FileSystem.ls("/")
+
+fs = fs |> FileSystem.add_content_to_file("/dir1/dir2/dir3/file1", "File")
+IO.inspect fs |> FileSystem.read_content_from_file("/dir1/dir2/dir3/file1")
+
+fs = fs |> FileSystem.add_content_to_file("/dir1/dir2/dir3/file1", " System")      
+IO.inspect fs |> FileSystem.read_content_from_file("/dir1/dir2/dir3/file1")

@@ -1,0 +1,69 @@
+defmodule BST.Node do
+  defstruct start: nil, end_var: nil, left: nil, right: nil
+  def init(start, end_var), do: %BST.Node{start: start, end_var: end_var}
+end
+
+defmodule BST do
+  defstruct root: nil
+  def init, do: %__MODULE__{}
+
+  def insert(obj, start, end_var) do
+    cond do
+      obj.root == nil ->
+        {%__MODULE__{obj | root: BST.Node.init(start, end_var)}, true}
+      true ->
+        obj |> add_node(obj.root, BST.Node.init(start, end_var))
+    end
+  end
+
+  def add_node(obj, curr_node, new_node) do
+    cond do
+      new_node.start >= curr_node.end_var ->
+        cond do
+          curr_node.right == nil -> 
+            curr_node = %BST.Node{curr_node | right: new_node}
+            {%__MODULE__{obj | root: curr_node}, true}
+          true -> 
+            add_node(obj, curr_node.right, new_node)
+        end
+
+      new_node.end_var <= curr_node.start -> 
+        cond do
+          curr_node.left == nil -> 
+            curr_node = %BST.Node{curr_node | left: new_node}
+            {%__MODULE__{obj | root: curr_node}, true}
+          true -> 
+            add_node(obj, curr_node.left, new_node)
+        end
+      true -> {obj, false}
+    end
+  end
+end
+
+defmodule Main do
+  def check_meeting(meeting_times, new_meeting) do
+
+    tree = 
+      meeting_times
+      |> Enum.reduce(BST.init, fn [first, next], tree ->
+        {tree, _} = tree |> BST.insert(first, next)
+        tree
+      end)
+
+    [first, next] = new_meeting
+    {_, result} = tree |> BST.insert(first, next)
+
+    result
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+meeting_times = [[1, 3], [4, 6], [8, 10], [10, 12], [13, 15]]
+new_meeting = [7, 8]
+IO.inspect Main.check_meeting(meeting_times, new_meeting)
+
+new_meeting = [9, 11]
+IO.inspect Main.check_meeting(meeting_times, new_meeting)

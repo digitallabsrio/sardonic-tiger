@@ -1,0 +1,5 @@
+defmodule Solution do
+  def is_division_possible(_nums, _k) do
+    # write your code here
+  end
+end

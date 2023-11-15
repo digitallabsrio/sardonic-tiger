@@ -1,0 +1,6 @@
+defmodule Solution do
+  def clock_angle(_hour, _minutes) do
+    # Write your code here
+    -1
+  end
+end

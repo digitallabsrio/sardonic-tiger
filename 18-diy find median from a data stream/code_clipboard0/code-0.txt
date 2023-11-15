@@ -1,0 +1,17 @@
+defmodule Solution do
+  # declare your data structures here
+  defstruct []
+
+  def init do 
+    # Initialize your data structures here
+  end
+
+  def insert_num(_obj, _num) do
+    # write your code here
+  end
+
+  def find_median(_obj) do
+    # write your code here
+    -1
+  end
+end

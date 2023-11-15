@@ -1,0 +1,6 @@
+defmodule Solution do
+  def accounts_merge(_accounts) do
+    # write your code here
+    []
+  end
+end

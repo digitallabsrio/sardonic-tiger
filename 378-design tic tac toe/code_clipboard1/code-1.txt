@@ -1,0 +1,78 @@
+defmodule TicTacToe do
+  defstruct rows: [], cols: [], diagonal: 0, anti_diagonal: 0
+  def init(n), do: %__MODULE__{rows: Arrays.new(List.duplicate(0, n)), cols: Arrays.new(List.duplicate(0, n))}
+
+  def move(obj, row, col, player) do
+    current_player = if player == 1, do: 1, else: -1
+
+    # update current_player in rows and cols arrays
+    rows_p = obj.rows
+    rows_p = Arrays.replace(rows_p, row, rows_p[row] + current_player)
+
+    cols_p = obj.cols
+    cols_p = Arrays.replace(cols_p, col, cols_p[col] + current_player)
+    # update object
+    obj = %__MODULE__{obj | rows: rows_p, cols: cols_p}
+
+    # update diagonal
+    diag = if row == col, do: obj.diagonal + current_player, else: obj.diagonal
+    # update anti diagonal
+    anti_diag = if col == (Arrays.size(obj.cols)-row-1), do: obj.anti_diagonal + current_player, else: obj.anti_diagonal
+    # update object
+    obj = %__MODULE__{obj | diagonal: diag, anti_diagonal: anti_diag}
+
+    n = Arrays.size(obj.rows)
+    # check if the current player wins
+    cond do
+      abs(obj.rows[row]) == n or
+      abs(obj.cols[col]) == n or
+      abs(obj.diagonal) == n or
+      abs(obj.anti_diagonal) == n -> {player, obj}
+
+      # No one wins
+      true -> {0, obj}
+    end
+  end
+end
+
+defmodule Main do
+  def player_wins(ticTacToe, input) do
+    input
+    |> Enum.reduce_while(ticTacToe, fn([val_zero, val_one, val_two], ticTacToe) -> 
+      IO.puts "Player #{val_two} makes a Move at (#{val_zero}, #{val_one})"
+      {win, ticTacToe} = ticTacToe |> TicTacToe.move(val_zero, val_one, val_two)
+
+      cond do
+        win == 0 -> 
+          IO.puts "No one wins"
+          {:cont, ticTacToe}
+        true -> 
+          IO.puts "Player #{win} wins"
+          {:halt, ticTacToe}
+      end
+    end)
+  end
+
+  def main do
+    # Driver Code
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:\n"
+
+    input = [
+      [3], 
+      [0, 0, 1], 
+      [0, 2, 2], 
+      [2, 2, 1], 
+      [1, 1, 2],
+      [2, 0, 1],
+      [1, 0, 2],
+      [2, 1, 1],
+    ]
+
+    [curr | input] = input
+    ticTacToe = TicTacToe.init(hd(curr))
+    player_wins(ticTacToe, input)
+  end
+end
+
+Main.main

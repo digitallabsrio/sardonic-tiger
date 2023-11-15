@@ -1,0 +1,5 @@
+defmodule Solution do
+  def sequence_reconstruction(_ord, _seqs) do
+    # write your code here
+  end
+end

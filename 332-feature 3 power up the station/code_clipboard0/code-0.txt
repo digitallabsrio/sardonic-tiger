@@ -1,0 +1,70 @@
+defmodule Stations do
+  alias Okasaki.Deque, as: Deque
+
+  def neighbors(src) do
+    res = []
+    src 
+    |> String.graphemes 
+    |> Enum.with_index 
+    |> Enum.reduce(res, fn({ch, i}, res) ->
+      num = String.to_integer(ch) # convert string to integer
+      # Calculate the new state by moving the current number in 
+      # opposite direction
+      int_num = if num == 0, do: 9, else: rem(num-1, 10)
+      value = String.slice(src, 0, i) <> Integer.to_string(int_num) <> String.slice(src, i+1, byte_size(src)-i-1)
+      res = [value | res]
+
+      # Calculate the new state by moving the current number in 
+      # forward direction
+      int_num2 = if num == 9, do: 0, else: rem(num+1, 10)
+      value2 = String.slice(src, 0, i) <> Integer.to_string(int_num2) <> String.slice(src, i+1, byte_size(src)-i-1)
+      [value2 | res]
+    end)
+  end
+
+  def power_up(dead_states, target) do
+    dead = MapSet.new(dead_states)
+    queue = Deque.new([{"0000", 0}])
+    visited = MapSet.new(["0000"])
+    bfs(queue, dead, visited, target)
+  end
+
+  def bfs(queue, dead, visited, target) do
+    cond do
+      Deque.size(queue) > 0 -> 
+        {:ok, {{node, depth}, queue}} = Deque.remove_left(queue)
+    
+        cond do
+            node == target -> depth
+            MapSet.member?(dead, node) -> bfs(queue, dead, visited, target)
+            true ->                  
+              {queue, visited} = update_queue_visited(queue, visited, depth, node)
+              bfs(queue, dead, visited, target)
+        end
+
+      true -> -1
+    end
+  end
+
+  def update_queue_visited(queue, visited, depth, node) do
+    neighbors(node) 
+    |> Enum.reduce({queue, visited}, fn(nei, {queue, visited}) ->
+      cond do
+        !MapSet.member?(visited, nei) ->
+          visited = visited |> MapSet.put(nei)
+          queue = queue |> Deque.insert_right({nei, depth+1})
+          {queue, visited}                      
+
+        true -> {queue, visited}
+      end
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+dead_states = ["0201","0101","0102","1212","2002"] 
+target = "0202"
+IO.puts "The system will power up in #{Stations.power_up(dead_states, target)} dial turns"

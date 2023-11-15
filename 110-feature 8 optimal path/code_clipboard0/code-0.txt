@@ -1,0 +1,57 @@
+defmodule Solution do
+    def both_greater(grid, k, l) do
+        left = (grid[k])[l-1]
+        down = (grid[k-1])[l]
+
+        min_val = min((grid[k])[l] + left, down + (grid[k])[l])
+        inner_array = Arrays.replace(grid[k], l, min_val)
+        Arrays.replace(grid, k, inner_array)
+    end
+
+    def only_one_greater(grid, k, l) do
+        case l do
+            n when n > 0 ->
+                    left = (grid[k])[l-1]
+                    inner_array = Arrays.replace(grid[k], l, (grid[k])[l]+left)
+                    Arrays.replace(grid, k, inner_array)
+
+            _ -> 
+                down = (grid[k-1])[l]
+                inner_array = Arrays.replace(grid[k], l, (grid[k])[l]+down)
+                Arrays.replace(grid, k, inner_array)
+        end
+    end
+
+    def min_path_sum(grid) do
+        i = Arrays.size(grid) - 1
+        j = Arrays.size(grid[0]) - 1
+
+        grid = 
+            0..i 
+            |> Enum.reduce(grid, fn(k, grid) ->
+                0..j 
+                |> Enum.reduce(grid, fn(l, grid) ->
+                    cond do
+                        k > 0 and l > 0 -> both_greater(grid, k, l)
+                        k > 0 or l > 0 -> only_one_greater(grid, k, l)
+                        true -> grid
+                    end
+                end)
+            end) 
+
+        (grid[i])[j] 
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+grid = Arrays.new([
+    Arrays.new([5,1,9,11]),
+    Arrays.new([11,4,8,10]),
+    Arrays.new([13,3,6,7]),
+    Arrays.new([5,14,12,4])
+])
+
+IO.inspect Solution.min_path_sum(grid)

@@ -1,0 +1,5 @@
+defmodule Solution do
+  def min_sum_length(_arr, _target) do
+    # write your code here
+  end
+end

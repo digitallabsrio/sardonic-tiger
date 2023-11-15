@@ -1,0 +1,52 @@
+defmodule Solution do
+    alias Okasaki.Deque, as: Deque
+
+    def max_users(array, size, k) do
+        mqueue = Deque.new([]) # Store given array indices. 
+        result = [] # Store maximum value of every window slide.
+
+        0..size-1
+        |> Enum.reduce({result, mqueue}, fn(i, {result, mqueue}) ->
+            mqueue = 
+                array
+                |> update_mqueue(mqueue, i) 
+                |> Deque.insert_right(i)
+
+            # Remove first element if it's outside the window slide.
+            {:ok, {first, mqueue_rest}} = Deque.remove_left(mqueue)
+            mqueue = if first == i - k, do: mqueue_rest, else: mqueue
+
+            # If given array index greater than and equal to the window slide size, then push the maximum value in result array.
+            {:ok, {first, _}} = Deque.remove_left(mqueue)
+            result = if i >= k - 1, do: [array[first] | result], else: result
+
+            {result, mqueue}
+        end)
+        |> elem(0)
+        |> :lists.reverse
+    end
+
+    def update_mqueue(array, mqueue, i) do        
+        cond do
+            Deque.size(mqueue) > 0 ->
+                {:ok, {val, mqueue_rest}} = Deque.remove_right(mqueue)
+
+                cond do
+                    array[val] <= array[i] -> update_mqueue(array, mqueue_rest, i)
+                    true -> mqueue
+                end
+
+            true -> mqueue
+        end
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+array = Arrays.new([4,7,12,16,8,3,13,20,5,9,22,2])
+size = Arrays.size(array)
+k = 7
+
+IO.inspect Solution.max_users(array, size, k)

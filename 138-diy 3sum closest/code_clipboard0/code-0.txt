@@ -1,0 +1,6 @@
+defmodule Solution do 
+  def three_sum_closest(_nums, _target) do
+    # Write your code here
+    -1
+  end
+end

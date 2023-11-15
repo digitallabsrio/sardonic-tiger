@@ -1,0 +1,90 @@
+defmodule Network do
+  alias Okasaki.Deque, as: Deque
+
+  def mini_variation_length(nums, threshold) do
+    min_deque = Deque.new([])
+    max_deque = Deque.new([])
+    start = end_var = 0
+    ans = 0
+
+    finding_longest_set(nums, threshold, min_deque, max_deque, start, end_var, ans)
+  end
+
+  def finding_longest_set(nums, threshold, min_deque, max_deque, start, end_var, ans) do
+    cond do
+      end_var >= Arrays.size(nums) -> ans
+      true ->
+        min_deque = updating_deque(nums, min_deque, end_var, 1)
+        max_deque = updating_deque(nums, max_deque, end_var, 0)
+
+        # append at end of both deques
+        min_deque = min_deque |> Deque.insert_right(end_var)
+        max_deque = max_deque |> Deque.insert_right(end_var)
+
+        {:ok, {val_max, _}} = Deque.remove_left(max_deque)
+        {:ok, {val_min, _}} = Deque.remove_left(min_deque)
+
+        variation = nums[val_max] - nums[val_min]
+        {start, min_deque, max_deque} = 
+          cond do
+            variation > threshold ->
+              start = start + 1
+              # A new sub-list is starting so elements from previous one should
+              # be removed from both the deques
+              cond do
+                start > val_min -> 
+                  # pop from front
+                  {:ok, {_, min_deque}} = Deque.remove_left(min_deque)
+                  {start, min_deque, max_deque}
+                start > val_max -> 
+                  # pop from front
+                  {:ok, {_, max_deque}} = Deque.remove_left(max_deque)
+                  {start, min_deque, max_deque}
+                true -> {start, min_deque, max_deque}
+              end
+            true -> {start, min_deque, max_deque}
+          end
+
+        ans = max(ans, end_var - start + 1)
+        end_var = end_var + 1
+        finding_longest_set(nums, threshold, min_deque, max_deque, start, end_var, ans)
+    end
+  end
+
+  defp updating_deque(nums, queue, end_var, sign) do
+    cond do
+      Deque.size(queue) <= 0 -> queue
+      true ->
+        {:ok, {item, _}} = Deque.remove_right(queue)
+ 
+        cond do
+          sign == 1 ->
+            cond do
+              # All elements greater than current index element gets removed from min_deque
+              Deque.size(queue) > 0 and nums[end_var] <= nums[item] ->
+                {:ok, {_, deque_rest}} = Deque.remove_right(queue) # pop from end
+                updating_deque(nums, deque_rest, end_var, sign)
+              true -> queue
+            end
+
+          sign == 0 ->
+            cond do
+              # All elements smaller than current index element gets removed from min_deque
+              Deque.size(queue) > 0 and nums[end_var] >= nums[item] ->
+                {:ok, {_, deque_rest}} = Deque.remove_right(queue) # pop from end
+                updating_deque(nums, deque_rest, end_var, sign)
+              true -> queue
+            end
+          true -> queue
+        end
+    end
+  end
+end
+        
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+traffic_rates = Arrays.new([10,1,2,4,7,2])
+threshold_mini_val = 5
+IO.puts "The traffic of this customer changes by less than or equal to #{threshold_mini_val} Gbps in a #{Network.mini_variation_length(traffic_rates, threshold_mini_val)} day window"

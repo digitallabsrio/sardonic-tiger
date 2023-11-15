@@ -1,0 +1,6 @@
+defmodule Solution do
+  def multiply(_first_number, _second_number) do
+    # Write your code here
+    "-1"  
+  end
+end

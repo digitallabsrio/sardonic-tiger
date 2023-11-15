@@ -1,0 +1,6 @@
+defmodule Solution do
+  def longest_ones(_nums, _k) do
+    # write your code here
+    -1
+  end
+end

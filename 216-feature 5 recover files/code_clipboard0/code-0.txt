@@ -1,0 +1,45 @@
+
+
+
+defmodule Solution do
+  def do_replace(string, indices), do: do_replace(string, indices, 0, "")
+  def do_replace(string, [], _current, acc), do: acc <> string
+  def do_replace(string, [index | indices], current, acc) do
+    case String.next_grapheme(string) do
+      nil -> acc
+
+      {next, rest} ->
+        {_, pointer} = index
+
+        if pointer == current do
+          do_replace(rest, indices, current + 1, acc <> "")
+        else
+          do_replace(rest, [index | indices], current + 1, acc <> next)
+        end
+    end
+  end
+
+  def recover_files(s) do
+    stack = []
+    
+    stack = 
+      0..byte_size(s)-1 
+      |> Enum.reduce(stack, fn(i, stack) ->
+        checker = if List.first(stack) == nil, do: nil, else: elem(List.first(stack), 0)
+        cond do
+          length(stack) > 0 and checker == "(" and String.at(s, i) == ")" -> stack |> tl
+          String.at(s, i) == "(" or String.at(s, i) == ")" -> [{String.at(s, i), i} | stack]
+
+          true -> stack
+        end
+      end) 
+      |> :lists.reverse
+
+    do_replace(s, stack)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.recover_files("11)01(110)001(")

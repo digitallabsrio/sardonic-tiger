@@ -1,0 +1,159 @@
+defmodule Solution do
+  def check_integer(char) do
+    case Integer.parse(char) do
+      {_, ""} -> true
+      _ -> false
+    end
+  end
+
+  def match_passwords(password, l, r), 
+    do: String.equivalent?(String.at(password, l), String.at(password, r))
+
+  def strong_password_checker(password) do
+    # the number of characters to delete
+    delete_char = max(0, byte_size(password) - 20)
+    # the number of characters to insert
+    insert_char = max(0, 6 - byte_size(password))
+    to_delete = to_add = to_replace = 0
+    upper_char = lower_char = digit_char = 1
+
+    # for cases where password.length <= 20
+    {_, upper_char, lower_char, digit_char, _, to_replace} = 
+      0..byte_size(password)-1 |> Enum.reduce(
+        {0, upper_char, lower_char, digit_char, to_add, to_replace}, fn(right, 
+        {left, upper_char, lower_char, digit_char, to_add, to_replace}) ->
+
+          ch = String.at(password, right)
+          # check if the password has uppercase or lowercase letters or digits
+          upper_char = if String.match?(ch, ~r/^[[:upper:]]+$/), do: 0, else: upper_char
+          lower_char = if String.match?(ch, ~r/^[[:lower:]]+$/), do: 0, else: lower_char
+          digit_char = if check_integer(ch), do: 0, else: digit_char
+
+          cond do
+            # if there is a substring with 3 characters
+            right - left == 2 ->
+              cond do
+                # check if the substring has three repeating characters
+                match_passwords(password, left, left+1) and match_passwords(password, left+1, right) ->
+                  cond do
+                    # we will insert a character if required
+                    to_add < insert_char -> {right, upper_char, lower_char, digit_char, to_add+1, to_replace}
+                    # otherwise we will replace a character to break the repetition
+                    true -> {right+1, upper_char, lower_char, digit_char, to_add, to_replace+1}
+                  end
+                # we will always keep the substring with 3 characters
+                true -> {left+1, upper_char, lower_char, digit_char, to_add, to_replace}
+              end
+            true -> {left, upper_char, lower_char, digit_char, to_add, to_replace}
+          end
+      end)
+
+    cond do
+      # for the case where password.length <= 20, return the number of
+      # replacements to make the password strong
+      byte_size(password) <= 20 -> max(insert_char + to_replace, upper_char + lower_char + digit_char)
+      true ->
+        # for cases where password.length > 20
+        to_replace = 0 # we will reset the number of replacements needed
+
+        # record repetitions with length % 3 is 0, 1 or 2
+        rep_counts = Arrays.new([])
+        rep_counts = 
+          1..3 |> Enum.reduce(rep_counts, fn(_, rep_counts) ->
+            temp = %{}
+            rep_counts |> Arrays.append(temp)
+          end)
+
+        # we store all repetion frequencies in the password
+        {_, rep_counts} = 
+          0..byte_size(password) |> Enum.reduce(
+            {0, rep_counts}, fn(right, {left, rep_counts}) ->
+              cond do
+                right == byte_size(password) or String.at(password, left) != String.at(password, right) ->
+                  len = right - left
+                  cond do
+                    len > 2 ->
+                      # we only care about repetions with length >= 3, and store 
+                      # the number of deletions required for this substring
+                      # increment the value in the hashmap, specific to the key
+
+                      temp = rep_counts[rem(len, 3)]
+                      count = Map.get(temp, len, nil)
+                      temp = if count == nil, do: Map.put(temp, len, 1), else: Map.put(temp, len, count+1)
+                      rep_counts = Arrays.replace(rep_counts, rem(len, 3), temp)
+
+                      {right, rep_counts}
+
+                    true -> {right, rep_counts}
+                  end
+
+                true -> {left, rep_counts}
+              end
+          end)
+
+        # We will delete characters to minimize replacements. We will follow the following pattern:
+        # i) if len % 3 == 0, we will delete one character from repetitions, thereby decreasing replacements by 1
+        # ii) if len % 3 == 1, we will delete two characters from repetitions, thereby decreasing replacements by 1 
+        # iii) if len % 3 == 2, we will delete multiple characters from repetitions, thereby decreasing replacements by 1 
+        {to_delete, to_replace, _} = 
+          0..2 |> Enum.reduce({to_delete, to_replace, rep_counts}, fn(i, {to_delete, to_replace, rep_counts}) ->
+            temp = rep_counts[i]
+            temp |> Enum.reduce({to_delete, to_replace, rep_counts}, fn({k, v}, {to_delete, to_replace, rep_counts}) ->
+              {to_delete, rep_counts, map} = 
+                cond do
+                  i < 2 ->
+                    num_letters = i + 1
+                    # dec is the number of repetitions we will delete from
+                    dec = min(v, div(delete_char - to_delete, num_letters))
+                    to_delete = to_delete + dec * num_letters
+
+                    # update the number of repetitions left oin the password
+                    count = v - dec
+                    temp = Map.put(temp, k, count)
+                    rep_counts = Arrays.replace(rep_counts, i, temp)
+
+                    rep_counts = 
+                      cond do
+                        # after characters are deleted, it fits in the group where length % 3 == 2
+                        k - num_letters > 2 ->
+                          temp3 = rep_counts[2]
+                          key = k - num_letters
+                          count3 = Map.get(temp3, k, nil)
+
+                          temp3 = if count3 == nil, do: Map.put(temp3, key, dec), else: Map.put(temp3, key, count + dec)
+                          Arrays.replace(rep_counts, 2, temp3)
+                        true -> rep_counts
+                      end
+
+                    {to_delete, rep_counts, temp}
+
+                  true -> {to_delete, rep_counts, %{k => v}}
+                end
+
+              # next we will record number of replacements needed
+              # also, note that if len is the length of repetition, we need (len / 3) number of replacements
+              to_replace = to_replace + map[k] * div(k, 3)
+              {to_delete, to_replace, rep_counts}
+            end)
+        end) 
+
+
+      num_rep = div(delete_char - to_delete, 3)
+      to_replace = to_replace - num_rep
+      _to_delete = to_delete - num_rep * 3
+      delete_char + max(to_replace, upper_char + lower_char + digit_char)        
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+inputs = ["abcdefghijklmnopqrstuvwxyz", "aaaaaaaaaaaaaaaaaaaaa", "aaaa", "aabcc!ccdd.A1"]
+
+inputs |> Enum.map(fn input -> 
+  steps = Solution.strong_password_checker(input) 
+  IO.puts "Password = #{input}"
+  IO.puts "Minimum steps required to make a password strong = #{steps}\n"
+end)

@@ -1,0 +1,6 @@
+int main() {
+  int value = getValue();  
+  int sum = value + getRandom();
+  int subs = value - getRandom();
+  return 0;
+}

@@ -1,0 +1,6 @@
+defmodule Solution do
+  def clone(_root_node) do
+    # write your code here
+    nil 
+  end
+end

@@ -1,0 +1,95 @@
+defmodule Meetings do
+  def min_steps(k) do
+    n = length(k)
+
+    cond do
+      n <= 1 -> 0
+      true ->
+        graph = %{}
+        graph = build_graph(k, graph, 0)
+
+        current = [0]  
+        visited = MapSet.new()
+        steps = 0
+
+        bfs(current, visited, graph, k, steps, n)
+    end
+  end
+  
+  def build_graph([], graph, _index), do: graph
+  def build_graph([head | tail], graph, index) do
+    cond do
+      Map.has_key?(graph, head) -> 
+        graph = update_in(graph, [head], &([index | &1]))
+        build_graph(tail, graph, index+1)
+
+      true ->
+        graph = Map.put(graph, head, [index])
+        build_graph(tail, graph, index+1)
+    end
+  end
+
+  def bfs(current, visited, graph, k, steps, n) do
+    # when current layer exists
+    cond do
+      length(current) == 0 -> -1
+      true ->
+        next_nodes = []
+        k = Arrays.new(k) # For faster indexing and access of element
+        {visited, graph, next_nodes, steps, res} = finding_visited_neighbors(current, visited, graph, k, next_nodes, steps, n)
+        cond do
+          res == :completed -> steps 
+          true -> bfs(next_nodes, visited, graph, k, steps+1, n)
+        end
+    end
+  end
+
+  def finding_visited_neighbors([], visited, graph, _k, next_nodes, steps, _n), do: {visited, graph, next_nodes, steps, :not_completed}
+  def finding_visited_neighbors([head | tail], visited, graph, k, next_nodes, steps, n) do
+    cond do
+      # check if reached end
+      head == n - 1 -> {visited, graph, next_nodes, steps, :completed}
+      true ->
+
+        # check same value
+        {visited, next_nodes} = finding_visited(graph[k[head]], visited, next_nodes)
+        # clear the list to prevent redundant search
+        graph = Map.put(graph, k[head], [])
+
+        # check neighbors
+        {visited, next_nodes} = check_neighbors([head - 1, head + 1], visited, next_nodes, n)
+        finding_visited_neighbors(tail, visited, graph, k, next_nodes, steps, n)
+    end
+  end
+
+  defp finding_visited([], visited, next_nodes), do: {visited, next_nodes}
+  defp finding_visited([head | tail], visited, next_nodes) do
+    cond do
+      !MapSet.member?(visited, head) ->
+        visited = MapSet.put(visited, head)
+        next_nodes = [head | next_nodes]
+        finding_visited(tail, visited, next_nodes)
+
+      true -> finding_visited(tail, visited, next_nodes)
+    end
+  end
+
+  defp check_neighbors([], visited, next_nodes, _size), do: {visited, next_nodes}
+  defp check_neighbors([head | tail], visited, next_nodes, size) do
+    cond do
+      0 <= head and head < size and !MapSet.member?(visited, head) ->
+        visited = MapSet.put(visited, head)
+        next_nodes = [head | next_nodes]
+        check_neighbors(tail, visited, next_nodes, size)
+
+      true -> check_neighbors(tail, visited, next_nodes, size)
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+k = [1, 2, 3, 4, 1, 3, 5, 3, 5]
+IO.inspect Meetings.min_steps(k)

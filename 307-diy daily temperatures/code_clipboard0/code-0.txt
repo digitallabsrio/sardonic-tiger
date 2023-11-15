@@ -1,0 +1,6 @@
+defmodule Solution do
+  def daily_temperatures(_temperatures) do
+    # Write your code here
+    []
+  end
+end

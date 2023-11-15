@@ -1,0 +1,6 @@
+defmodule Solution do
+  def walls_and_gates(rooms) do    
+    # Write your code here
+    rooms
+  end 
+end

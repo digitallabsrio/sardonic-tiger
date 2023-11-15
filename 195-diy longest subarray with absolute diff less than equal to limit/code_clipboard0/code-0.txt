@@ -1,0 +1,6 @@
+defmodule Solution do
+    def longest_subarray(_nums, _limit) do
+        # write your code here
+        -1
+    end
+end  

@@ -1,0 +1,29 @@
+defmodule Solution do
+  def reconstruct_queue(people) do
+    output = []
+
+    # Convert initial lists to tuples
+    people = people |> Enum.map(fn x -> x |> List.to_tuple end)
+
+    # First sort priorities by priority and then by the k value.
+    # priority in descending order and k value in ascending order.
+    people = people |> Enum.sort(&(elem(&1, 0) >= elem(&2, 0)))
+
+    # Iterate over the sorted list people and add people[i] at index people[i][1] 
+    # of output list.
+    people = 
+      people 
+      |> Enum.reduce(output, fn(p, output) ->
+        List.insert_at(output, elem(p, 1), p)
+      end)
+
+     # Convert initial tuples back to list
+    people |> Enum.map(fn x -> x |> Tuple.to_list end)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+people = [[7,0],[4,4],[7,1],[5,0],[6,1],[5,2]]
+IO.inspect Solution.reconstruct_queue(people)

@@ -1,0 +1,5 @@
+defmodule Solution do
+  def number_to_words(_n) do
+    # write your code here
+  end
+end

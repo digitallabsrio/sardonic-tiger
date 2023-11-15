@@ -1,0 +1,10 @@
+defmodule LoggerRate do
+  def init do
+    # Initialize your data structure here
+  end
+  
+  def should_print_message(obj, _timestamp, _message) do
+    # write your code here
+    {nil, obj}
+  end
+end

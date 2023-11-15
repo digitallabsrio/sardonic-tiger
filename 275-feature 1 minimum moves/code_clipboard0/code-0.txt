@@ -1,0 +1,101 @@
+defmodule Scrabble do
+    alias Okasaki.Deque, as: Deque
+
+    def minimum_moves(initial_word, final_word, word_group) do
+        cond do
+           final_word not in word_group or !final_word or !initial_word or !word_group -> 0
+           true ->
+                # Since all words are of same length
+                m = byte_size(initial_word)
+                # Hash Map to hold combination of words that can be formed,
+                # from any given word. By changing one letter at a time.
+                states_list = %{}
+                states_list = 
+                    word_group 
+                    |> Enum.reduce(states_list, fn(word, states_list) ->
+                        0..m-1
+                        |> Enum.reduce(states_list, fn(i, states_list) ->
+                            slice_word_start = String.slice(word, 0, i)
+                            slice_word_end = String.slice(word, i+1, byte_size(word)-i-1)
+                            index = slice_word_start <> "_" <> slice_word_end
+
+                            # Key is the generic word
+                            # Value is a list of words which have the same intermediate generic word.
+                            Map.update(states_list, index, [word], &([word | &1]))
+                        end)
+                    end)
+
+                # Queue for BFS
+                queue = Deque.new([{initial_word, 0}])
+                # # Visited to make sure we don't repeat processing same word.
+                visited = %{}
+                visited = Map.put(visited, initial_word, true)
+                bfs(states_list, queue, m, visited, final_word)
+        end
+    end
+
+    def bfs(states_list, queue, m, visited, final_word) do
+        cond do
+            Deque.size(queue) > 0 ->
+                {:ok, {{current_word, level}, queue}} = Deque.remove_left(queue)
+
+                {states_list, queue, visited, level, res} = update_multiple_elements(states_list, queue, visited, final_word, current_word, level, m)
+                case res do 
+                    true -> level
+                    _ -> bfs(states_list, queue, m, visited, final_word)
+                end
+            true -> 0
+        end
+    end
+
+    def update_multiple_elements(states_list, queue, visited, final_word, current_word, level, m) do
+        0..m-1
+        |> Enum.reduce_while({states_list, queue, visited, level, false}, 
+            fn(i, {states_list, queue, visited, level, res}) ->
+                # Intermediate words for current word
+                curr_word_start = String.slice(current_word, 0, i)
+                curr_word_end = String.slice(current_word, i+1, byte_size(current_word)-i-1)
+                intermediate_word = curr_word_start <> "_" <> curr_word_end
+
+                # Next states are all the words which share the same intermediate state.
+                list_value = Map.get(states_list, intermediate_word, [])
+                {visited, queue, level, res} = finding_words(list_value, final_word, visited, queue, level, res)
+
+                case res do 
+                    true -> {:halt, {states_list, queue, visited, level, true}}
+                    _ -> 
+                    states_list = Map.put(states_list, intermediate_word, [])
+                    {:cont, {states_list, queue, visited, level, res}}
+                end
+            end
+        )
+    end
+
+    def finding_words(states_list, final_word, visited, queue, level, res) do
+        states_list
+        |> Enum.reduce_while({visited, queue, level, res}, fn(word, {visited, queue, level, res}) ->
+            cond do
+                # If at any point if we find what we are looking for
+                # i.e. the end word - we can return with the answer.
+                word == final_word -> {:halt, {visited, queue, level+1, true}}
+
+                # Otherwise, add it to the BFS Queue. Also mark it visited
+                !Map.has_key?(visited, word) ->
+                    visited = Map.put(visited, word, true)
+                    queue = queue |> Deque.insert_right({word, level + 1})
+                    {:cont, {visited, queue, level, res}}
+
+                true -> {:cont, {visited, queue, level, res}}
+            end
+        end)
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+initial_word = "hit"
+final_word = "cog"
+word_group = ["hot","dot","dog","lot","log","cog"]
+IO.puts "The shortest sequece is of length: #{Scrabble.minimum_moves(initial_word, final_word, word_group)}"

@@ -1,0 +1,45 @@
+defmodule BinaryTree do
+    def dfs(node, level, rightside) do
+        rightside =
+            cond do
+                level == length(rightside) -> [node.val | rightside]
+                true -> rightside
+            end        
+
+        [node.right, node.left]
+        |> Enum.reduce(rightside, fn(child, rightside) ->
+            cond do
+                child != nil -> dfs(child, level + 1, rightside)
+                true -> rightside
+            end
+        end)
+    end
+
+    def right_side_view(root) when root == nil, do: []
+    def right_side_view(root) do
+        rightside = []
+        dfs(root, 0, rightside) |> :lists.reverse
+    end
+end
+
+
+# Driver Code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    root = TreeNode.init(1)
+    root = %TreeNode{root | left: TreeNode.init(2)}
+    root = %TreeNode{root | right: TreeNode.init(3)}
+    root = %TreeNode{root | left: %TreeNode{root.left | left: TreeNode.init(4)}}
+    root = %TreeNode{root | left: %TreeNode{root.left | right: TreeNode.init(5)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init(6)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init(7)}}
+
+    inner_left = %TreeNode{root.right.right | left: TreeNode.init(8)}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: inner_left}}
+
+    IO.inspect BinaryTree.right_side_view(root)
+  end
+end

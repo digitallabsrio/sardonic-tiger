@@ -1,0 +1,5 @@
+defmodule Solution do
+  def partition_labels(_s) do
+    # write your code here
+  end
+end

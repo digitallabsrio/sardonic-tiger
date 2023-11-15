@@ -1,0 +1,36 @@
+defmodule Products do
+  def preorder(nil, output, _low, _high), do: output
+  def preorder(node, output, low, high) do
+    output = if low <= node.val and node.val <= high, do: [node.val | output], else: output
+    output = if low <= node.val, do: preorder(node.left_child, output, low, high), else: output
+    if node.val <= high, do: preorder(node.right_child, output, low, high), else: output
+  end
+
+  def products_in_range(root, low, high) do
+    output = []
+    preorder(root, output, low, high) 
+    |> :lists.reverse
+  end
+end
+
+# Driver code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    bst =
+      BinarySearchTree.init 
+      |> BinarySearchTree.insert(9) 
+      |> BinarySearchTree.insert(6)
+      |> BinarySearchTree.insert(14)
+      |> BinarySearchTree.insert(20)
+      |> BinarySearchTree.insert(1)
+      |> BinarySearchTree.insert(30)
+      |> BinarySearchTree.insert(8)
+      |> BinarySearchTree.insert(17)
+      |> BinarySearchTree.insert(5)
+
+    IO.inspect Products.products_in_range(bst.root, 7, 20), charlists: :as_lists
+  end
+end

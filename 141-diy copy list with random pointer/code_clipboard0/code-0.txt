@@ -1,0 +1,5 @@
+defmodule Solution do
+  def copy_random_list(_head) do
+    # write your code here
+  end
+end

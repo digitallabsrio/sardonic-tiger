@@ -1,0 +1,40 @@
+defmodule Products do
+  def find_similarity(products, candidates) do
+    prod_n = Arrays.size(products)
+    cand_n = Arrays.size(candidates)
+    res = []
+
+    cand_count = candidates |> Enum.frequencies
+    prod_count = products |> Arrays.slice(0..cand_n-2) |> Enum.frequencies
+
+    cand_n-1..prod_n-1
+    |> Enum.reduce({res, prod_count}, fn(i, {res, prod_count}) ->
+      value = Map.get(prod_count, products[i], 0) + 1
+      prod_count = Map.put(prod_count, products[i], value)
+
+      res = if prod_count == cand_count, do: [i - cand_n + 1 | res], else: res
+
+      key = products[i - cand_n + 1]
+      value = prod_count[key] - 1
+      prod_count = Map.put(prod_count, key, value)
+
+      cond do
+        prod_count[products[i - cand_n + 1]] == 0 ->
+          prod_count = prod_count |> Map.delete(products[i - cand_n + 1])
+          {res, prod_count}
+
+        true -> {res, prod_count}
+      end
+    end)
+    |> elem(0)
+    |> :lists.reverse
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+product = Arrays.new([3, 2, 1, 5, 2, 1, 2, 1, 3, 4])
+candidate = Arrays.new([1, 2, 3])
+IO.inspect Products.find_similarity(product, candidate)

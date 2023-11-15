@@ -1,0 +1,77 @@
+defmodule Solution do
+  def finding_index(num, index) do
+    cond do
+      index >= 0 and num[index] >= num[index+1] -> finding_index(num, index-1)
+      true -> index
+    end
+  end
+
+  def finding_jth_num(num, index, j) do
+    cond do
+      num[j] <= num[index] -> finding_jth_num(num, index, j-1)
+      true -> j
+    end
+  end
+
+  def swap_numbers(num, i, j) do
+    temp = num[i]    
+    num
+    |> Arrays.replace(i, num[j])
+    |> Arrays.replace(j, temp)
+  end
+
+  # Reverse a list, given a starting index.
+  def reverse_list(num, i, j) do
+    cond do
+      i < j ->
+        num = swap_numbers(num, i, j)
+        reverse_list(num, i+1, j-1)
+      true -> num
+    end
+  end
+
+  def reverse_list(num, start) do
+    i = start
+    j = Arrays.size(num) - 1
+    reverse_list(num, i, j)
+  end
+
+  def next_mutation(num) do
+    # Get the index of the second last number and compare it with the 
+    # number next to it, on the right. 
+    index = Arrays.size(num) - 2
+    
+    # Find the index of the number num[index-1] which satisfies 
+    # the condition num[index] > num[index-1]. Here num[index] and num[index+1]
+    # represent two successive numbers in the sequence.
+    index = finding_index(num, index)
+
+    # Find the the number num[j] which is just larger than num[index-1]
+    # among the numbers lying to the right of num[index-1].
+    num =   
+      cond do
+        index >= 0 -> 
+          j = finding_jth_num(num, index, Arrays.size(num) - 1)
+
+          # Swap num[index-1] and num[j]
+          swap_numbers(num, index, j)
+        true -> num
+      end    
+
+    # Reverse the numbers following num[index-1], so that they are in 
+    # ascending order.
+    reverse_list(num, index + 1) |> Arrays.to_list
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+num = Arrays.new([4,5,2,6,7,3,1])
+IO.write "Input: "
+IO.inspect num |> Arrays.to_list
+
+result = Solution.next_mutation(num)
+IO.write "Output: "
+IO.inspect result

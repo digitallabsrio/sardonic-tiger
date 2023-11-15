@@ -1,0 +1,6 @@
+defmodule Solution do
+ def open_lock(_deadends, _target) do
+    # write your code here
+    -1
+  end
+end

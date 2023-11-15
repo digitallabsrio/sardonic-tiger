@@ -1,0 +1,5 @@
+defmodule Solution do
+  def find_string(_grid, _string) do
+    # write your code here
+  end
+end

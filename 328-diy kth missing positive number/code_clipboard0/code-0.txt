@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_Kth_positive(_arr, _k) do
+    # write your code here 
+    -1
+  end
+end

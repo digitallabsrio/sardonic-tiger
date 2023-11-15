@@ -1,0 +1,19 @@
+defmodule LFUCache do
+  defstruct capacity: nil, min_freq: 0, freq_dict: %{}, key_dict: %{}
+  def init(capacity), do: %__MODULE__{capacity: capacity}
+
+  def put(obj, _key, _value) do
+    # Write your code here
+    obj
+  end
+
+  def get(obj, _key) do
+    # Write your code here
+    {obj, -1}
+  end
+
+  def get_cache(obj) do
+    obj.key_dict 
+    |> Enum.reduce("", fn({k, v}, res) -> res <> "(#{k},#{elem(v, 0)})" end)
+  end
+end

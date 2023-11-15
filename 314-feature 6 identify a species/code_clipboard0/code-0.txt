@@ -1,0 +1,60 @@
+defmodule Solution do  
+  def find_species_marker(""), do: "DNA sequence must have atleast one nucleotide."
+  def find_species_marker(nucleotide) do
+    # write your code here
+    n = String.length(nucleotide)
+    st_curr = longest = start = i = 0
+    window = Map.new()
+
+    # Traverse the DNA sequence to find the longest substring 
+    # without repeating characters.
+    {_, longest, start, st_curr, i} = 
+      0..n-1 
+      |> Enum.reduce({window, longest, start, st_curr, i}, fn(i, {window, longest, start, st_curr, i}) ->
+        cond do
+          # If the current nucleotide is not present in the map,
+          # then store it in map with the value as the current index.
+          !Map.has_key?(window, String.at(nucleotide, i)) -> 
+            window = Map.put(window, String.at(nucleotide, i), i)
+            {window, longest, start, st_curr, i+1}
+      
+          true ->
+            # If the current nucleotide is present in the map, 
+            # it means that this nucleotide can be repeated. 
+            # Check if the current nucleotide occurs before or after `stCurr`.
+            {longest, start, st_curr} =
+              cond do
+                window[String.at(nucleotide, i)] >= st_curr ->
+                  curr_len = i - st_curr
+                  {longest, start} = if longest < curr_len, do: {curr_len, st_curr}, else: {longest, start}
+    
+                  # The next substring will start after the last 
+                  # occurence of the current nucleotide. 
+                  st_curr = window[String.at(nucleotide, i)] + 1
+                  {longest, start, st_curr}
+
+                true -> {longest, start, st_curr}
+              end
+
+              # The next substring will start after the last 
+              # occurence of the current nucleotide. 
+              window = Map.replace(window, String.at(nucleotide, i), i)
+              {window, longest, start, st_curr, i+1}
+          end
+      end)
+
+    # Update the longest substring 
+    # length and starting index.
+    {longest, start} = if longest < i - st_curr, do: {i - st_curr, st_curr}, else: {longest, start}
+    String.slice(nucleotide, start, start + longest - start)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+nucleotide = "abcdbea";
+str = Solution.find_species_marker(nucleotide)
+IO.puts "Specie marker: #{str}"
+IO.puts "Length of specie marker: #{byte_size(str)}"

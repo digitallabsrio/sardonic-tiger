@@ -1,0 +1,64 @@
+defmodule Tree do
+    defstruct max_diff: nil
+    def init, do: %__MODULE__{}
+
+    def dfs(obj, node, _maxi_val, _mini_val) when node == nil, do: obj
+    def dfs(obj, node, maxi_val, mini_val) do
+        # update `max_diff`
+        max_diff = max(max(obj.max_diff, abs(maxi_val - node.val)), abs(mini_val - node.val))
+        obj = %__MODULE__{obj | max_diff: max_diff}
+
+        # update the maxi_val and mini_val
+        maxi_val = max(maxi_val, node.val)
+        mini_val = min(mini_val, node.val)
+
+        node.children
+        |> Enum.reduce(obj, fn(child, obj) -> dfs(obj, child, maxi_val, mini_val) end)
+    end
+
+    def max_clock_skew(root) when root == nil, do: 0
+    def max_clock_skew(root) do
+        # store the required maximum difference
+        obj = %__MODULE__{Tree.init | max_diff: 0}
+        obj = dfs(obj, root, root.val, root.val)
+        obj.max_diff
+    end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+root = TreeNode.init(8)
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(3)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(10)))
+root = put_in(root.children, Arrays.append(root.children, TreeNode.init(12)))
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(6))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[0].children |> Arrays.append(TreeNode.init(1))
+root = put_in(root.children[0].children[0].children, i_value)
+
+value = root.children[0].children |> Arrays.append(TreeNode.init(5))
+root = put_in(root.children[0].children, value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(2))
+root = put_in(root.children[0].children[1].children, i_value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(3))
+root = put_in(root.children[0].children[1].children, i_value)
+
+i_value = root.children[0].children[1].children |> Arrays.append(TreeNode.init(4))
+root = put_in(root.children[0].children[1].children, i_value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(8))
+root = put_in(root.children[2].children, value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(7))
+root = put_in(root.children[2].children, value)
+
+value = root.children[2].children |> Arrays.append(TreeNode.init(9))
+root = put_in(root.children[2].children, value)
+
+IO.puts "The maximum clock skew we'll encounter is: #{Tree.max_clock_skew(root)} seconds"

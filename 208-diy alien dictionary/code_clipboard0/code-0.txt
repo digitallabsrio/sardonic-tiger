@@ -1,0 +1,6 @@
+defmodule Solution do
+  def alien_order(_words) do
+    # Write your code here
+    ""
+  end
+end

@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_provinces_num(_is_connected) do
+    # write your code here
+    0
+  end
+end

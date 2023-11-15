@@ -1,0 +1,5 @@
+defmodule Solution do
+  def min_window(_s, _t) do
+    # Write your code here 
+  end
+end

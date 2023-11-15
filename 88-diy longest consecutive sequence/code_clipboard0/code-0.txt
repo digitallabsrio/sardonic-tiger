@@ -1,0 +1,5 @@
+defmodule Solution do
+    def lcs(_arr) do
+        #write your code here
+    end
+end

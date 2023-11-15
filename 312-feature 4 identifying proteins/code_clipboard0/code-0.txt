@@ -1,0 +1,21 @@
+defmodule Protein do
+  # Strings that have length 1 or 0 are palindrome
+  def is_protein(sequence) when byte_size(sequence) <= 1, do: true # Base Case
+  def is_protein(sequence) do   
+    length = byte_size(sequence)
+
+    # Recursive Case
+    cond do
+      # compare the first and last elements
+      String.first(sequence) == String.last(sequence) -> is_protein(String.slice(sequence, 1, length - 2))
+      true -> false
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+protein = "acbca"
+IO.puts "Is #{protein} a Protein? #{Protein.is_protein(protein)}"

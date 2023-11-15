@@ -1,0 +1,55 @@
+defmodule Matrix do
+  def bottom_matrix(_matrix, res, _r, c_start, c_end) when c_start == c_end, do: res
+  def bottom_matrix(matrix, res, r, c_start, c_end) do
+    res = res |> Arrays.append((matrix[r])[c_start])
+    bottom_matrix(matrix, res, r, c_start-1, c_end)
+  end
+
+  def left_matrix(_matrix, res, r_start, r_end, _c) when r_start == r_end, do: res
+  def left_matrix(matrix, res, r_start, r_end, c) do
+    res = res |> Arrays.append((matrix[r_start])[c])
+    left_matrix(matrix, res, r_start-1, r_end, c)
+  end
+
+  def layer_by_layer_approach(matrix, res, r1, r2, c1, c2) do
+    cond do
+      r1 <= r2 and c1 <= c2 ->
+        res = c1..c2 |> Enum.reduce(res, fn(c, res) -> Arrays.append(res, (matrix[r1])[c]) end)
+        res = r1+1..(r2)//1 |> Enum.reduce(res, fn(r, res) -> Arrays.append(res, (matrix[r])[c2]) end)
+        cond do
+          r1 < r2 and c1 < c2 ->
+            res = bottom_matrix(matrix, res, r2, c2-1, c1)
+            res = left_matrix(matrix, res, r2, r1, c1)
+            layer_by_layer_approach(matrix, res, r1+1, r2-1, c1+1, c2-1)
+ 
+          true -> layer_by_layer_approach(matrix, res, r1+1, r2-1, c1+1, c2-1)
+        end
+      true -> res 
+    end
+  end
+
+  def spiral_order(matrix) do
+    cond do
+      !matrix -> []
+      true ->
+        res = Arrays.new([])
+        r1 = c1 = 0
+        r2 = Arrays.size(matrix)-1
+        c2 = Arrays.size(matrix[0])-1
+
+        layer_by_layer_approach(matrix, res, r1, r2, c1, c2) 
+        |> Arrays.to_list
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+matrix = Arrays.new([
+  Arrays.new([0, 1, 2]), 
+  Arrays.new([7, 8, 3]), 
+  Arrays.new([6, 5, 4])
+])
+IO.inspect Matrix.spiral_order(matrix)

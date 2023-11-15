@@ -1,0 +1,5 @@
+defmodule Solution do
+  def three_subarray_max_sum(_numbers, _k) do
+    # write your code here
+  end
+end

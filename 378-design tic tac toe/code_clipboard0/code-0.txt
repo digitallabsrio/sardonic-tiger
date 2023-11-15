@@ -1,0 +1,13 @@
+defmodule TicTacToe do
+  defstruct []
+
+  def init(_n) do 
+    # Initialise your data structures here
+  end
+
+  def move(obj, _row, _col, _player) do
+    # Write your code here
+
+    {-1, obj} # return 0 if no one wins otherwise return player id
+  end
+end

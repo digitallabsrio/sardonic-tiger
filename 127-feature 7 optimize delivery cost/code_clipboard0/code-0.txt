@@ -1,0 +1,30 @@
+defmodule Delivery do
+    def check_delivery(packages, k) do
+        curr_sum = 0
+        # if the very first subarray with first two numbers in array could form the result, we need to 
+        # put mod value 0 and index -1 to make it as a true case
+        dict = Map.new |> Map.put(0, -1)
+        packages 
+        |> Enum.with_index() 
+        |> Enum.reduce_while({dict, curr_sum, false}, fn({package, i}, {dict, curr_sum, res}) ->
+            curr_sum = curr_sum + package
+            curr_sum = if k != 0, do: rem(curr_sum, k), else: curr_sum
+
+            if Map.has_key?(dict, curr_sum) do
+                if i - dict[curr_sum] > 1, do: {:halt, {dict, curr_sum, true}}, else: {:cont, {dict, curr_sum, res}}
+            else
+                dict = Map.put(dict, curr_sum, i)
+                {:cont, {dict, curr_sum, res}}
+            end
+        end)
+        |> elem(2)
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+packages = [11, 42, 54, 44, 49, 26]
+k = 10
+IO.inspect Delivery.check_delivery(packages, k)

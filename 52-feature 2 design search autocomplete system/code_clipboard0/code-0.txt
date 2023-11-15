@@ -1,0 +1,123 @@
+defmodule System.Node do
+  defstruct children: %{}, is_end: false, data: nil, rank: 0
+  def init, do: %__MODULE__{}
+end
+
+defmodule AutocompleteSystem do
+    defstruct root: System.Node.init, keyword: ""
+
+    def init(sentences, times) do 
+        obj = %__MODULE__{}
+
+        node =
+            Enum.zip(sentences, times) 
+            |> Enum.reduce(obj.root, fn {sentence, time}, node -> 
+                string_list = sentence |> String.graphemes
+                add_record(node, string_list, sentence, time)
+            end)
+
+        %__MODULE__{obj | root: node}        
+    end
+
+    defp node_creater_getter(node, key) do
+        node.children 
+        |> Map.put_new(key, System.Node.init) 
+        |> Map.get(key)
+    end
+
+    def add_record(node, [head | tail], sentence, hot) do
+        child = node_creater_getter(node, head)
+        child = add_record(child, tail, sentence, hot)
+        %System.Node{node | children: Map.put(node.children, head, child)}
+    end
+
+    def add_record(node, [], sentence, hot) do 
+        %System.Node{node | is_end: true, data: sentence, rank: node.rank - hot}
+    end
+
+    def fetch_nodes(node, []), do: {:ok, node}
+    def fetch_nodes(node, [head | tail]) do
+        case Map.fetch(node.children, head) do
+            {:ok, child} -> fetch_nodes(child, tail)
+            :error -> {:error, []}
+        end
+    end
+
+    def get_trie(node, key) do
+        key_list = key |> String.graphemes
+        case fetch_nodes(node, key_list) do
+            {:ok, val} -> val
+            {:error, []} -> nil
+        end
+    end
+
+    def dfs(node, words) do
+        ret =
+            case node.is_end do
+                true -> [{node.rank, node.data} | words]
+                _ -> words
+            end
+
+        node.children
+        |> Enum.reduce(ret, fn ({_, trie}, acc) -> dfs(trie, acc) end)
+    end
+
+    def dfs(node), do: dfs(node, [])
+
+    def search(node, prefix) do
+        sub_trie = get_trie(node, prefix) || System.Node.init
+        
+        sub_trie 
+        |> dfs 
+        |> Enum.sort 
+        |> Enum.slice(0, 3) 
+        |> Enum.map(fn item -> elem(item, 1) end)
+    end
+
+    def auto_complete(obj, c) do
+        results = []        
+        cond do
+            c != "#" ->
+                obj = %__MODULE__{obj | keyword: obj.keyword <> c}
+                results = search(obj.root, obj.keyword)
+
+                {obj, results}
+            true ->
+                string_list = obj.keyword |> String.graphemes
+                node = add_record(obj.root, string_list, obj.keyword, 1)
+                obj = %__MODULE__{obj | root: node, keyword: ""}
+
+                {obj, results}
+        end
+    end
+end
+    
+# Driver Code
+defmodule Main do
+    def main do
+        IO.puts "-----------------------------"
+        IO.puts "PROGRAM OUTPUT:\n"
+
+        sentences = ["beautiful", "best quotes", "best friend", "best birthday wishes", "instagram", "internet"]
+        times = [30, 14, 21, 10, 10, 15]
+ 
+        auto = AutocompleteSystem.init(sentences, times)
+        
+        {auto, result} =  auto |> AutocompleteSystem.auto_complete("b")
+        IO.inspect result
+
+        {auto, result} =  auto |> AutocompleteSystem.auto_complete("e")
+        IO.inspect result
+
+        {auto, result} = auto |> AutocompleteSystem.auto_complete("s")
+        IO.inspect result
+
+        {auto, result} = auto |> AutocompleteSystem.auto_complete("t")
+        IO.inspect result
+
+        {_, result} = auto |> AutocompleteSystem.auto_complete("#")
+        IO.inspect result 
+    end
+end
+
+Main.main

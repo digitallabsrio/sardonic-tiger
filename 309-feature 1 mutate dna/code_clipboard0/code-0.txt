@@ -1,0 +1,36 @@
+defmodule DNA do
+  def mutate_dna(str1, str2) when byte_size(str1) != byte_size(str2), do: false
+  def mutate_dna(str1, str2) when str1 == str2, do: true
+  def mutate_dna(str1, str2) do
+    # form the graph, we can represent it as a map describing the edges
+    edges = %{}
+
+    {_, result} = 
+      Enum.zip(str1 |> String.graphemes, str2 |> String.graphemes)
+      |> Enum.reduce_while({edges, true}, fn({c1, c2}, {edges, result}) ->
+        cond do
+          # This clause corresponds to discovering a new edge
+          !Map.has_key?(edges, c1) -> {:cont, {Map.put(edges, c1, c2), result}}
+        
+          # This clause corresponds to discovering more than one out-degree, 
+          # which we concluded is not possible
+          edges[c1] != c2 -> {:halt, {edges, false}}
+
+          true -> {:cont, {edges, result}}
+        end
+      end)
+
+    if !result, do: false, else: MapSet.size(MapSet.new(str2 |> String.graphemes)) < 26     
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+s1 = "aabcc"
+s2 = "ccdee"
+cond do
+  DNA.mutate_dna(s1, s2) -> IO.puts "Mutation Possible"
+  true -> IO.puts "Mutation not Possible"
+end

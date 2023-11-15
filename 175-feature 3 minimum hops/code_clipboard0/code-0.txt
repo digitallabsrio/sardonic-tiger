@@ -1,0 +1,25 @@
+defmodule Hops do
+    def minimum_hops(values) when length(values) < 2, do: 0
+    def minimum_hops(values) do
+        max_reach = hd(values)
+        curr_reach = hd(values)
+        hops = 1
+
+        values 
+        |> Enum.with_index
+        |> Enum.reduce({hops, curr_reach, max_reach}, fn({value, i}, {hops, curr_reach, max_reach}) ->
+            cond do
+                curr_reach < i -> {hops+1, max_reach, max_reach}
+                true -> {hops, curr_reach, max(max_reach, value + i)}
+            end
+        end) 
+        |> elem(0)
+    end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+switch_array = [2,3,1,1,4]
+IO.puts "Minimum hops to final router are: #{Hops.minimum_hops(switch_array)}"

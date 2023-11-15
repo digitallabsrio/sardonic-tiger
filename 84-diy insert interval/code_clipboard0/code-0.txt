@@ -1,0 +1,6 @@
+defmodule Solution do
+    def insert_interval(_intervals, _new_interval) do
+        # write your code here
+        []
+    end
+end

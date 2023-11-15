@@ -1,0 +1,6 @@
+defmodule Solution do
+  def string_compression(chars) do
+    # write your code here
+    {-1, chars}
+  end
+end

@@ -1,0 +1,92 @@
+defmodule Solution do
+  alias Okasaki.Queue, as: Queue
+
+  # OpenSpace is initialized to infinity number representing the open spaces
+  @open_space 2147483647
+  # DropPoint is initialized to 0 representing the drop point
+  @drop_point 0
+  # Directions are used to keep the track of the shelves, drop points and open source 
+  @directions [[0, 1], [0, -1], [-1, 0], [1, 0]]
+
+  def check_queue(warehouse, q, m, n) do
+    cond do
+      Queue.size(q) > 0 -> 
+        {:ok, {val, q}} = Queue.remove(q)
+        row = elem(val, 0)
+        col = elem(val, 1)
+
+        {warehouse, q} = 
+          @directions 
+          |> Enum.reduce({warehouse, q}, fn([d_0, d_1], {warehouse,q}) ->            
+            r = row + d_0
+            c = col + d_1
+            arr_val = warehouse[r][c]
+
+            cond do
+              r < 0 or c < 0 or r >= m or c >= n or arr_val != @open_space -> {warehouse, q}
+              true -> 
+                val = warehouse[row][col] + 1
+                arr = Arrays.replace((warehouse[r]), c, val)
+                warehouse = Arrays.replace(warehouse, r, arr)
+                q = q |> Queue.insert({r, c})
+
+                {warehouse, q}
+            end
+          end)
+
+          check_queue(warehouse, q, m, n)
+
+      true -> warehouse
+    end
+  end
+
+  def warehouse_and_drop_points(warehouse) do
+    m = Arrays.size(warehouse)
+
+    cond do
+      # First of all check if the given warehouse is empty or not
+      # If empty return 
+      m == 0 -> nil
+      true -> 
+        # Save the warehouse row and col lengths in m and n
+        n = Arrays.size(warehouse[0])
+        # Intialize a queue to implement a Bread-First search approach
+        q = Queue.new()
+
+        q = 
+          0..m-1 |> Enum.reduce(q, fn(row, q) ->
+            0..n-1 |> Enum.reduce(q, fn(col, q) ->
+            
+              cond do
+                warehouse[row][col] == @drop_point ->
+                  q |> Queue.insert({row, col})
+                true -> q
+              end
+            
+            end)
+          end)
+
+        # Filling the open spaces with the distances to its nearest drop point 
+        # using the queue and BFS approach
+        check_queue(warehouse, q, m, n)
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+warehouse = Arrays.new([
+  Arrays.new([2147483647,-1,0,2147483647]),
+  Arrays.new([2147483647,2147483647,2147483647,-1]),
+  Arrays.new([2147483647,-1,2147483647,-1]),
+  Arrays.new([0,-1,2147483647,2147483647])
+])
+
+IO.write("Given Warehouse: ")
+IO.inspect warehouse |> Helper.printer
+
+warehouse = Solution.warehouse_and_drop_points(warehouse)
+IO.write("Filled Warehouse: ")
+IO.inspect warehouse |> Helper.printer

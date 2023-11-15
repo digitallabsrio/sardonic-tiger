@@ -1,0 +1,10 @@
+/* Example code for feature */
+int main() {
+  /*
+  This is a 
+  block comment
+  */
+  int value = 10;  // This is an inline comment
+  int sum = value + /* this is // also a block */ value;
+  return 0;
+}

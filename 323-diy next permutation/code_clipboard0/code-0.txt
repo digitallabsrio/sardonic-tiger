@@ -1,0 +1,6 @@
+defmodule Solution do
+  def next_permutation(num) do
+    # write your code here
+    num
+  end
+end

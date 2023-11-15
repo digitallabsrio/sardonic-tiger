@@ -1,0 +1,6 @@
+defmodule Solution do
+  def valid_utf8(_data) do    
+    # Write your code here
+    false
+  end
+end

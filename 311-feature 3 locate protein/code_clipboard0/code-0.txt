@@ -1,0 +1,41 @@
+defmodule Protein do
+  # returns size of the current/latest palindrome
+  def return_palindrome_length(s, left, right) do
+    cond do
+      left >= 0 and right < byte_size(s) and String.at(s, left) == String.at(s, right) ->
+        return_palindrome_length(s, left-1, right+1)  
+      true -> right - left - 1
+    end
+  end
+
+  def locate_protein(s) when s == nil or byte_size(s) == 0, do: ""
+  def locate_protein(s) do
+    start = end_var = 0
+    
+    {start, end_var} = 
+      0..byte_size(s)-1
+      |> Enum.reduce({start, end_var}, fn(i, {start, end_var}) ->
+        len1 = return_palindrome_length(s, i, i) # for odd length
+        len2 = return_palindrome_length(s, i, i+1) # for even length 
+        res_len = max(len1, len2)
+
+        cond do
+          res_len > (end_var - start) -> 
+            start = i - div(res_len - 1, 2)
+            end_var = i + div(res_len, 2)
+            {start, end_var}
+
+          true -> {start, end_var}
+        end
+      end)
+
+    String.slice(s, start..end_var)
+  end
+end
+    
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+sequence = "aaccbababcbc"
+IO.puts Protein.locate_protein(sequence)

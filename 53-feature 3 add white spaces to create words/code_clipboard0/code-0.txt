@@ -1,0 +1,41 @@
+defmodule Words do
+  def break_query(query, dict) do
+    n = byte_size(query)
+    dp = 
+      List.duplicate(false, n+1)
+      |> Arrays.new
+      |> Arrays.replace(0, true)
+
+    0..n-1
+    |> Enum.reduce(dp, fn(i, dp) ->
+      cond do
+        dp[i] ->
+          dict
+          |> Enum.reduce(dp, fn(j, dp) ->
+            l = byte_size(j)
+            cond do
+              i+l <= n and String.slice(query, i..(i+l)-1) == j ->
+                Arrays.replace(dp, i + l, true)
+              true -> dp
+            end
+
+          end)          
+        true -> dp
+      end
+    end)
+    |> Arrays.get(n)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example 1
+query = "vegancookbook"
+dict = ["i", "cream", "cook", "scream", "ice", "cat", "book", "icecream", "vegan"]
+IO.inspect Words.break_query(query, dict)
+
+# Example 2
+query = "veganicetea"
+IO.inspect Words.break_query(query, dict)

@@ -1,0 +1,25 @@
+defmodule Solution do
+  def clock_angle(hour, minutes) do
+    one_min_angle = 6
+    one_hour_angle = 30
+
+    minutes_angle = one_min_angle * minutes
+    hour_angle = (rem(hour, 12) + (minutes / 60.0)) * one_hour_angle
+
+    diff = abs(hour_angle - minutes_angle)
+    min(diff, 360 - diff)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+IO.puts "Hour: 1, Minutes: 34"
+IO.puts "Angle: #{Solution.clock_angle(1, 34)}"
+
+IO.puts "Hour: 3, Minutes: 7"
+IO.puts "Angle: #{Solution.clock_angle(3, 7)}"
+
+IO.puts "Hour: 3, Minutes: 30"
+IO.puts "Angle: #{Solution.clock_angle(3, 30)}"

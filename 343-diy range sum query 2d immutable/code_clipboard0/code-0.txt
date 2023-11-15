@@ -1,0 +1,12 @@
+defmodule NumMatrix do
+  defstruct []
+
+  def init(_matrix) do
+    # write your code here
+  end
+
+  def sum_region(_obj, _row1, _col1, _row2, _col2) do
+    # write your code here
+    -1
+  end
+end

@@ -1,0 +1,36 @@
+defmodule Solution do
+  def binary_search(arr, k, left, right) do
+    cond do
+      left <= right -> 
+        # we choose the pivot, which is the middle index of the array, arr
+        pivot = div(left + right, 2)
+
+        cond do
+          # If the number of missing genes before the current gene 
+          # is less than k, we will continue to search on the right side of arr.
+          arr[pivot] - pivot - 1 < k -> binary_search(arr, k, pivot + 1, right)
+  
+          # Otherwise, we will continue to search on the left of arr
+          true -> binary_search(arr, k, left, pivot - 1)
+        end
+
+      true -> left + k
+    end
+  end
+
+  def find_Kth_missing_gene(arr, k) do
+    left = 0
+    right = Arrays.size(arr) - 1
+    binary_search(arr, k, left, right)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+arr = Arrays.new([2, 3, 4, 7, 11])
+k = 5
+
+missing_genes = Solution.find_Kth_missing_gene(arr, k)
+IO.puts "The kth missing gene is: #{missing_genes}" 

@@ -1,0 +1,71 @@
+defmodule BinaryTree do
+  alias Okasaki.Deque, as: Deque
+
+  def zigzag_level_order(nil), do: []
+  def zigzag_level_order(root) do
+    results = Arrays.new([])
+    # To iterate the tree in a zigzag order
+    reverse = false
+    dq = Deque.new([root])
+    zigzag_level_order(dq, results, reverse)
+  end
+
+  # level order traversal with DFS
+  def zigzag_level_order(dq, results, reverse) do
+    cond do
+      Deque.size(dq) > 0 -> 
+        size = Deque.size(dq)
+        results = results |> Arrays.append(Arrays.empty())
+        {dq, results, reverse} = zigzag_level_order(dq, results, reverse, size)
+        zigzag_level_order(dq, results, !reverse)   
+
+      true -> results
+    end
+  end
+
+  def zigzag_level_order(dq, results, reverse, size) do
+    0..size-1
+    |> Enum.reduce({dq, results, reverse}, fn(_, {dq, results, reverse}) ->
+      cond do
+        !reverse ->
+          {:ok, {node, dq}} = Deque.remove_left(dq)
+          temp = results[-1] |> Arrays.append(node.val)
+          results = Arrays.replace(results, -1, temp)
+
+          dq = if node.left != nil, do: dq |> Deque.insert_right(node.left), else: dq
+          dq = if node.right != nil, do: dq |> Deque.insert_right(node.right), else: dq
+
+          {dq, results, reverse}
+
+        true ->
+          {:ok, {node, dq}} = Deque.remove_right(dq)
+          temp = results[-1] |> Arrays.append(node.val)
+          results = Arrays.replace(results, -1, temp)
+
+          dq = if node.right != nil, do: dq |> Deque.insert_left(node.right), else: dq
+          dq = if node.left != nil, do: dq |> Deque.insert_left(node.left), else: dq
+
+          {dq, results, reverse}
+      end
+    end)
+  end
+end
+
+# Driver Code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    root = TreeNode.init(3)
+    root = %TreeNode{root | right: TreeNode.init(9)}
+    root = %TreeNode{root | left: TreeNode.init(6)}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init(15)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init(12)}}
+
+    output = BinaryTree.zigzag_level_order(root) |> Helper.convert
+    IO.inspect(output, charlists: :as_lists)
+  end
+end
+
+Main.main

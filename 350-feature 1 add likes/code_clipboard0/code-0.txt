@@ -1,0 +1,48 @@
+defmodule Tweets do
+  def add_likes(like1, like2) do
+    res = []
+    carry = 0
+    p1 = byte_size(like1) - 1
+    p2 = byte_size(like2) - 1
+
+    {res, carry} = add_likes(like1, like2, res, carry, p1, p2)
+    res = if carry != 0, do: [carry | res], else: res
+
+    res 
+    |> Enum.map(fn x -> Integer.to_string(x) end) 
+    |> Enum.join("")    
+  end
+
+  defp add_likes(like1, like2, res, carry, p1, p2) do
+    cond do
+      p1 >= 0 or p2 >= 0 ->
+        x1 =
+          cond do
+            p1 >= 0 -> 
+              :binary.match("0123456789", String.at(like1, p1))
+              |> elem(0)
+            true -> 0
+          end
+
+        x2 =
+          cond do
+            p2 >= 0 -> 
+              :binary.match("0123456789", String.at(like2, p2))
+              |> elem(0)
+            true -> 0
+          end
+
+        value = rem(x1 + x2 + carry, 10)
+        carry = div(x1 + x2 + carry, 10)
+        res = [value | res]
+        add_likes(like1, like2, res, carry, p1-1, p2-1)
+
+      true -> {res, carry}
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Tweets.add_likes("1545", "67")

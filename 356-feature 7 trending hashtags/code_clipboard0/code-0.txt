@@ -1,0 +1,49 @@
+defmodule Solution do
+  def find_duplicate_tweets(tweets_info) do
+    # create a hashmap to store the duplicate people names for a hashtag
+    map = %{}
+
+    # iterate over each tweet information
+    map = 
+      tweets_info 
+      |> Enum.reduce(map, fn(tweet, map) ->
+        # obtain the days, people names, and hashtags 
+        # separately by splitting based on the space
+        [day | values] = tweet |> String.split 
+
+        values 
+        |> Enum.reduce(map, fn(value, map) ->
+          # split the person name and the hashtag appropriately to get the hashtag
+          name_count = value |> String.split("(") |> Arrays.new
+          name_count = Arrays.replace(name_count, 1, String.replace(name_count[1], ")", ""))
+
+          # check of the hashtag already exists in the map
+          # if it exists, then return its value and add the hashmap path to it,
+          # otherwise create a new list and and add the hashmap path to it
+          list = Map.get(map, name_count[1], []) |> Arrays.new
+          list = list |> Arrays.append(day <> "/" <> name_count[0])
+          Map.put(map, name_count[1], list)
+        end)
+      end)
+
+    # check if each hashtag has a list that consists of at least 
+    # two hashtag paths, and add such lists to the output and return it
+    output = []
+    map 
+    |> Map.keys 
+    |> Enum.reduce(output, fn(key, output) ->
+      cond do
+        Map.get(map, key) |> Arrays.size > 1 -> [Map.get(map, key) | output]
+        true -> output
+      end
+    end)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+tweets_info = ["Monday Joe(t20) Jack(chevrolet) Charlie(ev)", "Tuesday Alice(cake) Bob(chevrolet)", "Wednesday Joe(boeing) Jack(ev) Alice(t20)"]
+output = Solution.find_duplicate_tweets(tweets_info) |> Helper.printer
+IO.inspect output

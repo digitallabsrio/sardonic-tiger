@@ -1,0 +1,81 @@
+defmodule Recommendations do
+  defp update_component(graph, stack, seen, component) do
+    cond do
+      length(stack) > 0 ->
+        [node | stack] = stack
+        component = [node | component]
+
+        {stack, seen} = 
+          graph[node] 
+          |> Enum.reduce({stack, seen}, fn(nei, {stack, seen}) ->
+            cond do
+              !MapSet.member?(seen, nei) ->
+                seen = MapSet.put(seen, nei)
+                stack = [nei | stack]
+                {stack, seen}
+
+              true -> {stack, seen}
+            end
+          end)
+
+        update_component(graph, stack, seen, component)
+
+      true -> component
+    end
+  end
+
+  def key_setter(graph, key, value) do
+    graph |> Map.update(key, MapSet.new([value]), &(MapSet.put(&1, value)))
+  end
+
+  def update_graph_email(graph, email_to_name, name, next, rest) do
+    rest
+    |> Enum.reduce({graph, email_to_name}, fn(email, {graph, email_to_name}) ->
+      graph = key_setter(graph, next, email) 
+      graph = key_setter(graph, email, next)
+      email_to_name = Map.put(email_to_name, email, name)
+      {graph, email_to_name}
+    end)
+  end
+
+  def accounts_merge(accounts) do
+    email_to_name = %{}
+    graph = %{}
+
+    {graph, email_to_name} =
+      accounts
+      |> Enum.reduce({graph, email_to_name}, fn(acc, {graph, email_to_name}) ->
+        [name, next | _] = acc
+        update_graph_email(graph, email_to_name, name, next, tl(acc))
+      end)
+
+    seen = MapSet.new()
+    ans = []
+
+    graph 
+    |> Enum.reduce(ans, fn({email, _}, ans) ->
+      cond do
+        !MapSet.member?(seen, email) ->
+          seen = MapSet.put(seen, email)
+          stack = [email]
+          component = []
+          component = update_component(graph, stack, seen, component)
+          [[email_to_name[email] | Enum.sort(component)] | ans]
+
+        true -> ans
+      end
+    end) 
+    |> Enum.uniq
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+accounts = [["Sarah", "sarah22@email.com", "sarah@gmail.com", "sarahhoward@email.com"],
+            ["Alice", "alicexoxo@email.com", "alicia@email.com", "alicelee@gmail.com"],
+            ["Sarah", "sarah@gmail.com", "sarah10101@gmail.com"],
+            ["Sarah", "sarah10101@gmail.com", "misshoward@gmail.com"]]
+
+IO.inspect Recommendations.accounts_merge(accounts)

@@ -1,0 +1,47 @@
+defmodule Solution do
+  def num_plain_text(c) do
+    memo = 
+      List.duplicate(-1, byte_size(c) + 1)
+      |> Arrays.new
+
+    memoization(0, c, memo)
+    |> elem(1)
+  end
+
+  def memoization(index, c, memo) do
+    cond do
+      memo[index] != -1 -> {memo, memo[index]}
+      # If we reach the end of the ciphertext, we return 1.
+      index == byte_size(c) -> {memo, 1}
+      # If the ciphertext starts with a zero, it cant be deciphered
+      String.at(c, index) == "0" -> {memo, 0}
+      index == byte_size(c)-1 -> {memo, 1}
+      true ->
+        # make a recursive call to the function with index + 1 for next substring
+        {memo, result} = memoization(index + 1, c, memo)
+
+        {memo, result} = 
+          cond do
+            # make a recursive call to the function with index + 2 after checking for
+            # valid two-digit decipher
+            String.to_integer(String.slice(c, index..index+1)) <= 26 ->
+              {memo, value} = memoization(index + 2, c, memo)
+              {memo, result + value}
+
+            true -> {memo, result}
+          end
+
+        # save the result to be used later, in case of overlapping subproblems.
+        memo = Arrays.replace(memo, index, result)
+        {memo, result}
+    end
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+c = "2317"
+num = Solution.num_plain_text(c)
+IO.puts "Number of possible plain text: #{num}"

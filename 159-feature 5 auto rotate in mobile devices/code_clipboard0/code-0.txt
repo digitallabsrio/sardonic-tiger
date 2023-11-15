@@ -1,0 +1,57 @@
+defmodule Solution do
+  def moving_matrix_inner(matrix, left, right) do
+    0..right-left-1 
+    |> Enum.reduce(matrix, fn(i, matrix) ->
+      top = left
+      bottom = right
+      top_left = (matrix[top])[left + i]
+
+      # move bottom_left to top_left
+      inner_array = Arrays.replace(matrix[top], left + i, (matrix[bottom - i])[left])
+      matrix = Arrays.replace(matrix, top, inner_array)
+
+      # move bottom_right to bottom_left
+      inner_array = Arrays.replace(matrix[bottom - i], left, (matrix[bottom])[right - i])
+      matrix = Arrays.replace(matrix, bottom - i, inner_array)
+
+      # move top_right to bottom_right
+      inner_array = Arrays.replace(matrix[bottom], right - i, (matrix[top + i])[right])
+      matrix = Arrays.replace(matrix, bottom, inner_array)
+      
+      # set saved to top_right
+      inner_array = Arrays.replace(matrix[top + i], right, top_left)
+      Arrays.replace(matrix, top + i, inner_array)
+    end)
+  end
+
+  def moving_matrix(matrix, left, right) do
+    cond do
+      left < right ->
+        # `right - left` moves our square in by 1 each outer iteration
+		    # the index is used to rotate the coordinates 
+        matrix = moving_matrix_inner(matrix, left, right)
+        moving_matrix(matrix, left+1, right-1)
+      true -> matrix
+    end
+  end
+
+  def autorotate(matrix) do
+    left = 0
+    right = Arrays.size(matrix) - 1
+    moving_matrix(matrix, left, right)
+  end
+end 
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+matrix = Arrays.new([
+  Arrays.new([5,1,9,11]),
+  Arrays.new([2,4,8,10]),
+  Arrays.new([13,3,6,7]),
+  Arrays.new([15,14,12,16])
+])
+
+output = Solution.autorotate(matrix) |> Helper.printer
+IO.inspect output

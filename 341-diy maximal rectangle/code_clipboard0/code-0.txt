@@ -1,0 +1,5 @@
+defmodule Solution do
+  def maximal_rectangle(_matrix) do
+    # write your code here
+  end
+end

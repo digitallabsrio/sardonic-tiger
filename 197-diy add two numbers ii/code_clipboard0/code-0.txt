@@ -1,0 +1,6 @@
+defmodule Solution do
+  def add_two_numbers2(list1, _list2) do  
+    # Write your code here
+    list1
+  end
+end

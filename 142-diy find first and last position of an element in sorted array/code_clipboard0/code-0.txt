@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_range(_numbers, _target) do
+    # write your code here
+    []
+  end
+end

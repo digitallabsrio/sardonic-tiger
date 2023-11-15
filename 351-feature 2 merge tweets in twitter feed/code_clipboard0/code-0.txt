@@ -1,0 +1,33 @@
+defmodule UserTweets do
+  def merge_tweets(feed, m, tweets, n) do
+    p1 = m - 1
+    p2 = n - 1
+    p = n + m - 1
+
+    p..0
+    |> Enum.reduce_while({feed, p1, p2}, fn(p, {feed, p1, p2}) ->
+      cond do
+        p2 < 0 -> {:halt, {feed, p1, p2}}
+      
+        p1 >= 0 and feed[p1] > tweets[p2] ->
+          feed = Arrays.replace(feed, p, feed[p1])
+          {:cont, {feed, p1 - 1, p2}}
+
+        true ->
+          feed = Arrays.replace(feed, p, tweets[p2])
+          {:cont, {feed, p1, p2 - 1}}
+      end
+    end)
+    |> elem(0)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+feed = Arrays.new([23, 33, 35, 41, 44, 47, 56, 91, 105, 0, 0, 0, 0, 0, 0])
+m = 9
+tweets = Arrays.new([32, 49, 50, 51, 61, 99])
+n = 6
+IO.inspect UserTweets.merge_tweets(feed, m, tweets, n) |> Arrays.to_list

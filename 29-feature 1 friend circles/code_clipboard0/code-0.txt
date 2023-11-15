@@ -1,0 +1,58 @@
+defmodule Friends do
+  # Recursively finds all users in a single friend circle
+  def check(x, v, visited) when x == v, do: visited
+  def check(x, v, visited) when x != v, do: Arrays.replace(visited, x, 1)
+  def dfs(friends, n, visited, v) do
+    0..n-1
+    |> Enum.reduce(visited, fn(x, visited) ->
+      cond do
+        # A user is in the friend circle if they are friends with the user represented by
+        # user index and if they are not already in a friend circle
+        (friends[v])[x] == 1 and visited[x] == 0 ->
+          visited = check(x, v, visited)
+          dfs(friends, n, visited, x)
+        true -> visited
+      end
+    end)
+  end
+
+  def friend_circles(_friends, n) when n == 0, do: 0
+  def friend_circles(friends, n) do
+    num_circles = 0    # Number of friend circles
+
+    # Keep track of whether a user is already in a friend circle
+    visited = Arrays.new(List.duplicate(0, n))
+
+    # Start with the first user and recursively find all other users in their
+    # friend circle. Then, do the same thing for the next user that is not already
+    # in a friend circle. Repeat until all users are in a friend circle. 
+    # helper_loop(friends, n, visited, num_circles, 0)
+    0..n-1 
+    |> Enum.reduce({visited, num_circles}, fn(i, {visited, num_circles}) ->
+      cond do
+        visited[i] == 0 ->
+          visited = Arrays.replace(visited, i, 1)
+          visited = dfs(friends, n, visited, i) # Recursive step to find all friends
+          num_circles = num_circles + 1
+          {visited, num_circles}
+
+        true -> {visited, num_circles}
+      end
+    end)
+    |> elem(1)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+n = 4
+friends = Arrays.new([
+  Arrays.new([1,1,0,0]),
+  Arrays.new([1,1,1,0]),
+  Arrays.new([0,1,1,0]),
+  Arrays.new([0,0,0,1])
+])
+
+IO.puts "Number of friend circles: #{Friends.friend_circles(friends, n)}"

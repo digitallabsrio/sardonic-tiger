@@ -1,0 +1,5 @@
+defmodule Solution do
+  def minimum_knight_moves(_x, _y) do
+    # Write your code here
+  end
+end

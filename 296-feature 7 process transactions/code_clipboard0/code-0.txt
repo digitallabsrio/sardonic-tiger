@@ -1,0 +1,66 @@
+defmodule Solution do
+  defp set_boundaries(num) when num > 2_147_483_647, do: 2_147_483_647
+  defp set_boundaries(num) when num < -2_147_483_648, do: -2_147_483_648
+  defp set_boundaries(num), do: num
+
+  def process_log(str_list, result) do
+    str_list
+    |> Enum.reduce_while(result, fn(str, result) ->
+      cond do
+        # check if the current character is a non-digit character is not
+        Regex.match?(~r/\d/, str) ->
+          # convert the char digit into int digit 
+          charToDigitVal = String.to_integer(str) 
+          # 4. check range (integer underflow and overflow)
+          charToDigitVal = charToDigitVal |> set_boundaries
+
+          # adding digits at their desired place-value
+          result = (result * 10) + charToDigitVal
+          {:cont, result}
+
+        true -> {:halt, result}
+      end
+    end)
+  end
+
+  def process_log(s) do
+    len = byte_size(s)
+
+    cond do
+      # sanity check if the length of the string is 0, simply return 0
+      len == 0 or s == nil -> 0
+      true ->
+        index = 0
+
+        # 1. check for white spaces
+        # Only the space character ' ' is considered a whitespace character.
+        s = s |> String.trim
+
+        # 2. check sign
+        is_negative = 0
+
+        {is_negative, index} = 
+          cond do
+            String.at(s, index) == "-" -> {1, index + 1}
+            String.at(s, index) == "+" -> {is_negative, index + 1}
+            true -> {is_negative, index}
+          end
+
+        # 3. read until next non-digit character found
+        result = 0
+        result = 
+          s 
+          |> String.slice(index, byte_size(s)) 
+          |> String.graphemes
+          |> process_log(result)
+
+        if is_negative == 1, do: -result, else: result
+    end
+  end
+end
+     
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+s = ["42", "    -123", "-42", "42 with words", "word 42", "1", " "]
+s |> Enum.each(fn val -> IO.inspect Solution.process_log(val) end)

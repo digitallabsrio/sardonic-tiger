@@ -1,0 +1,5 @@
+defmodule Solution do
+  def top_K_frequent(_nums, _k) do
+    # write your code here
+  end
+end

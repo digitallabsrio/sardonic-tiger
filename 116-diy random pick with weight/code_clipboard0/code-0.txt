@@ -1,0 +1,62 @@
+defmodule RandomPickWithWeight do
+  defstruct [] 
+  def init() do
+    # write your code
+    # Declare the data structures here
+  end
+
+  def pick_index(_obj) do
+    # write your code
+    -1
+  end
+
+  def new_random_pick_with_weight(_distributions) do
+    # Initialize the data structrues here
+    %__MODULE__{}
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:\n"
+
+distributions1 = Arrays.new([1, 2, 3, 4, 5])
+frequencies = 
+  distributions1 
+  |> Enum.reduce(%{}, fn d, frequencies -> Map.put(frequencies, d, 0) end)
+
+sol = RandomPickWithWeight.new_random_pick_with_weight(distributions1)
+IO.inspect sol
+
+frequencies = 
+  0..99 |> Enum.reduce(frequencies, fn(_, frequencies) ->
+    index = sol |> RandomPickWithWeight.pick_index
+    cond do
+      index >= 0 and index < Arrays.size(distributions1) -> 
+        element = distributions1[index]
+        Map.put(frequencies, element, frequencies[element] + 1)
+      true -> frequencies
+    end
+  end)
+
+frequencies |> Helper.print_dict
+    
+distributions2 = Arrays.new([1, 12, 23, 34, 45, 56, 67, 78, 89, 90])
+frequencies = 
+  distributions2
+  |> Enum.reduce(%{}, fn d, frequencies -> Map.put(frequencies, d, 0) end)
+
+sol2 = RandomPickWithWeight.new_random_pick_with_weight(distributions2)
+
+frequencies = 
+  0..99 |> Enum.reduce(frequencies, fn(_, frequencies) ->
+    index = sol2 |> RandomPickWithWeight.pick_index
+    cond do
+      index >= 0 and index < Arrays.size(distributions2) -> 
+        element = distributions2[index]
+        Map.put(frequencies, element, frequencies[element] + 1)
+      true -> frequencies
+    end
+  end)
+
+frequencies |> Helper.print_dict

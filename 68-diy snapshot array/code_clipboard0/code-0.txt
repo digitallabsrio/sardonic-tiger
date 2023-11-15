@@ -1,0 +1,23 @@
+defmodule SnapshotArray do
+  defstruct []
+
+  def init(_length) do
+    # Write your code here
+    %__MODULE__{}
+  end
+
+  def set_value(obj, _idx, _val) do
+    # Write your code here
+    obj
+  end
+
+  def snapshot(obj) do
+    # Write your code here
+    {obj, -1}
+  end
+
+  def get_value(_obj, _idx, _snap_id) do
+    # Write your code here
+    -1
+  end
+end

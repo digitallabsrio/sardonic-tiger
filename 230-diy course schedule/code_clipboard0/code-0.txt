@@ -1,0 +1,5 @@
+defmodule Solution do
+  def can_finish(_num_courses, _prerequisites) do        
+    # Write your code here
+  end
+end

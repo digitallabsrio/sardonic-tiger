@@ -1,0 +1,6 @@
+defmodule Solution do
+  def shortest_bridge(_grid) do
+    # write your code here
+    -1
+  end
+end

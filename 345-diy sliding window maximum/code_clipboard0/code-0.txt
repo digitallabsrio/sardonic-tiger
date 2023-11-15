@@ -1,0 +1,6 @@
+defmodule Solution do
+  def winslidemax(_array, _size, _k) do
+    # Write your code here
+    []
+  end
+end

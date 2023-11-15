@@ -1,0 +1,26 @@
+defmodule Solution do
+  def binary_search(process, lo, hi) do
+    cond do
+      lo < hi ->
+        mid = div(lo + hi, 2)
+        mid = if rem(mid, 2) == 1, do: mid - 1, else: mid
+        cond do
+          process[mid] == process[mid + 1] -> binary_search(process, mid+2, hi)
+          true -> binary_search(process, lo, mid)
+        end
+
+      true -> process[lo]
+    end
+  end
+  
+  def find_unreleased_lock(process) do
+    lo = 0
+    hi = Arrays.size(process) - 1
+    binary_search(process, lo, hi)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+IO.inspect Solution.find_unreleased_lock(Arrays.new([1,1,2,2,3,3,4,4,5,8,8]))

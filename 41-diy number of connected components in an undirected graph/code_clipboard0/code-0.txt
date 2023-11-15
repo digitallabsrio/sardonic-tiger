@@ -1,0 +1,5 @@
+defmodule Solution do
+  def count_connected_comp(_edges, _n) do
+    # write your code here
+  end
+end

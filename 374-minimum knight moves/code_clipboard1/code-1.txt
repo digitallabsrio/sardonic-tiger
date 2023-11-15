@@ -1,0 +1,34 @@
+defmodule Knight do
+  def dfs(x, y) do
+    moves = %{
+      {0, 0} => 0, 
+      {1, 1} => 2, 
+      {2, 0} => 2, 
+      {0, 2} => 2, 
+      {1, 0} => 3, 
+      {0, 1} => 3
+    }
+
+    x = abs(x)
+    y = abs(y)
+    {x, y} = if x > y, do: {y, x}, else: {x, y} 
+
+    cond do
+      Map.has_key?(moves, {x, y}) -> moves[{x, y}]
+      true ->
+        moves = Map.put(moves, {x, y}, min(dfs(abs(x - 1), abs(y - 2)), dfs(abs(x - 2), abs(y - 1))) + 1)
+        moves[{x, y}]
+    end
+  end
+
+  def minimum_knight_moves(x, y), do: dfs(x, y)
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+IO.inspect Knight.minimum_knight_moves(2, 1)
+IO.inspect Knight.minimum_knight_moves(2, 0)
+IO.inspect Knight.minimum_knight_moves(3, 1)
+IO.inspect Knight.minimum_knight_moves(5, 5)

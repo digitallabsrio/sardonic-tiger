@@ -1,0 +1,71 @@
+defmodule Solution do
+  def is_visited(visited, r, c) do
+    # return whether the cell was visited or not.
+    MapSet.member?(visited, to_string(r) <> "," <> to_string(c))
+  end
+
+  def validate_bounds(grid, r, c) do
+    r < 0 or r >= Arrays.size(grid) or c < 0 or c >= Arrays.size(grid[0])
+  end
+
+  def area(grid, visited, r, c) do
+    cond do
+      validate_bounds(grid, r, c) or is_visited(visited, r, c) or (grid[r])[c] == 0 -> {0, visited}
+      true -> 
+        visited = MapSet.put(visited, to_string(r) <> "," <> to_string(c))
+        {right, visited} = area(grid, visited, r+1, c)
+        {left, visited} = area(grid, visited, r-1, c)
+        {down, visited} = area(grid, visited, r, c-1)
+        {top, visited} = area(grid, visited, r, c+1)
+        {1 + right + left + down + top, visited}
+    end
+  end
+
+  def max_contiguous_area(grid) do
+    visited = MapSet.new()
+    ans = 0
+
+    0..Arrays.size(grid)-1 
+    |> Enum.reduce({ans, visited}, fn(r, {ans, visited}) -> 
+      0..Arrays.size(grid[0])-1 
+      |> Enum.reduce({ans, visited}, fn(c, {ans, visited}) ->
+        {ans_area, visited} = area(grid, visited, r, c)
+        {max(ans, ans_area), visited}
+      end)
+    end) 
+    |> elem(0)
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+# Example - 1
+grid = Arrays.new([
+  Arrays.new([0, 0, 1, 1, 0, 1]),
+  Arrays.new([0, 0, 1, 0, 0, 0]),
+  Arrays.new([1, 1, 1, 0, 1, 1]),
+  Arrays.new([0, 1, 0, 1, 0, 0]),
+  Arrays.new([1, 0, 1, 0, 0, 1])
+])
+
+IO.puts "Maximum Contiguous Area: #{Solution.max_contiguous_area(grid)}"
+
+# Example - 2
+grid = Arrays.new([
+  Arrays.new([0, 0, 0]),
+  Arrays.new([0, 0, 0]),
+  Arrays.new([0, 0, 0])
+])
+
+IO.puts "Maximum Contiguous Area: #{Solution.max_contiguous_area(grid)}"
+
+# Example - 3
+grid = Arrays.new([
+  Arrays.new([1, 0, 1]),
+  Arrays.new([0, 0, 0]),
+  Arrays.new([1, 0, 1])
+])
+
+IO.puts "Maximum Contiguous Area: #{Solution.max_contiguous_area(grid)}"

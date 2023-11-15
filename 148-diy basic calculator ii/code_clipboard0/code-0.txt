@@ -1,0 +1,6 @@
+defmodule Solution do
+  def calculate(_st) do
+    # write your code here
+    0
+  end
+end

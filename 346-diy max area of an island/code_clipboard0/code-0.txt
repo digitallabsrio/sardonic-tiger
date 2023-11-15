@@ -1,0 +1,6 @@
+defmodule Solution do
+  def max_area_of_island(_grid) do
+    # write your code here
+    -1
+  end
+end

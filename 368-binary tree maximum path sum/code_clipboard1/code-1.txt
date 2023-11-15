@@ -1,0 +1,54 @@
+defmodule BinaryTree do
+  def max_contrib(node, _max_sum) when node == nil, do: {0, 0}
+  def max_contrib(node, max_sum) do
+    # max sum on the left and right sub-trees of node
+    {left_rest, left_subtree} = max_contrib(node.left, max_sum)
+    {right_rest, right_subtree} = max_contrib(node.right, max_sum)
+    max_sum = max(left_rest, right_rest)
+
+    # the price to start a new path where `node` is a highest node
+    price_newpath = node.val + left_subtree + right_subtree
+
+    # update max_sum if it's better to start a new path
+    max_sum = max(max_sum, price_newpath)
+
+    # for recursion:
+    # return the max contribution if continue the same path
+    max_result = max(0, node.val + max(left_subtree, right_subtree))
+    {max_sum, max_result}
+  end
+
+  def max_path_sum(root) do
+    max_sum = 'inf'
+    max_contrib(root, max_sum)
+    |> elem(0)
+  end
+end
+
+# Driver Code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+
+    # Example 1
+    root = TreeNode.init(-8)
+    root = %TreeNode{root | left: TreeNode.init(2)}
+    root = %TreeNode{root | right: TreeNode.init(17)}
+    root = %TreeNode{root | left: %TreeNode{root.left | left: TreeNode.init(1)}}
+    root = %TreeNode{root | left: %TreeNode{root.left | right: TreeNode.init(4)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init(19)}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init(5)}}
+
+    IO.inspect BinaryTree.max_path_sum(root)
+
+    # Example 2
+    root2 = TreeNode.init(7)
+    root2 = %TreeNode{root2 | left: TreeNode.init(3)}
+    root2 = %TreeNode{root2 | right: TreeNode.init(4)}
+    root2 = %TreeNode{root2 | right: %TreeNode{root2.right | left: TreeNode.init(-1)}}
+    root2 = %TreeNode{root2 | right: %TreeNode{root2.right | right: TreeNode.init(-3)}}
+
+    IO.inspect BinaryTree.max_path_sum(root2)
+  end
+end

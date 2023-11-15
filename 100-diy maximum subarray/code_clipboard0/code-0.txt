@@ -1,0 +1,5 @@
+defmodule Solution do
+  def max_sub_array(_arr) do
+    # write your code here
+  end
+end

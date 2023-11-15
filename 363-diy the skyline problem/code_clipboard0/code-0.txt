@@ -1,0 +1,6 @@
+defmodule Solution do
+  def draw_skyline(_buildings) do
+    # Write your code here
+    []
+  end
+end

@@ -1,0 +1,53 @@
+defmodule Ethernet do
+  alias Okasaki.Deque, as: Deque
+
+  def total_time(main_server_id, parents, delays) do
+    n = length(parents)
+    total_time(main_server_id, parents, delays, n)
+  end
+
+  def total_time(_main_server_id, _parents, _delays, n) when n <= 1, do: 0
+  def total_time(main_server_id, parents, delays, _n) do
+    res = 0
+    children = %{}
+    children = 
+      parents 
+      |> Enum.with_index
+      |> Enum.reduce(children, fn({sender, receiver}, children) ->
+        Map.update(children, sender, [receiver], &([receiver | &1]))
+      end)
+
+    queue = Deque.new([{main_server_id, delays[main_server_id]}])
+    update_res(children, queue, delays, res)
+  end
+
+  def update_res(children, queue, delays, res) do
+    cond do
+      queue |> Deque.empty? -> res
+      true ->
+        {:ok, {{cur_id, cur_time}, rest_queue}} = Deque.remove_left(queue) 
+
+        # calculate max
+        res = max(res, cur_time)
+        child_val = Map.get(children, cur_id, [])
+        queue = update_queue(child_val, rest_queue, delays, cur_time)
+        update_res(children, queue, delays, res)
+    end
+  end
+
+  def update_queue(child_val, queue, delays, cur_time) do
+    child_val
+    |> Enum.reduce(queue, fn(child, queue) ->
+      queue |> Deque.insert_right({child, cur_time + delays[child]})
+    end)
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+main_server_id = 0
+parents = [-1,0,0,1,1,2,2,3,3,4,4,5,5,6,6]
+delays = Arrays.new([1,1,1,1,1,1,1,0,0,0,0,0,0,0,0])
+IO.puts "Time required by message to reach all devices is #{Ethernet.total_time(main_server_id, parents, delays)} units!"

@@ -1,0 +1,26 @@
+defmodule FileSystem do
+    defstruct []
+    def init do
+        # write your code here
+    end
+
+    def ls(_obj, _path) do
+        # write your code here
+        []
+    end
+
+    def mkdir(obj, _path) do
+        # write your code here
+        obj
+    end
+
+    def add_content_to_file(obj, _file_path, _content) do
+        # write your code here
+        obj
+    end
+
+    def read_content_from_file(_obj, _file_path) do
+        # write your code here
+        ""
+    end
+end

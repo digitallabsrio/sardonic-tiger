@@ -1,0 +1,46 @@
+defmodule Plagiarism do
+  def possible_matches(s, words) do
+    count = 0
+    find_students(s, words, count)
+  end
+
+  defp find_students(_s, [], count), do: count
+  defp find_students(s, [head | tail], count) do
+    cond do
+      is_subsequence(head, s) -> find_students(s, tail, count+1)
+      true -> find_students(s, tail, count)
+    end
+  end
+
+  defp is_subsequence(s, _t) when s == "", do: true
+  defp is_subsequence(s, t) do
+    t 
+    |> String.graphemes 
+    |> get_student(s, 0)
+  end
+
+  defp get_student([], _s, _pointer), do: false
+  defp get_student([head | tail], s, pointer) do
+    case String.next_grapheme(s) do
+      nil -> true
+
+      {next, rest} ->
+        cond do
+          head == next ->
+            cond do
+              pointer == byte_size(s)-1 -> true
+              true -> get_student(tail, rest, pointer+1)
+            end
+          true -> get_student(tail, s, pointer)
+        end
+    end
+  end
+end
+
+# Driver Code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+plagiarised = "abcde"
+students = ["a","bb","acd","ace"]
+IO.puts "The content was copied from #{Plagiarism.possible_matches(plagiarised, students)} students"

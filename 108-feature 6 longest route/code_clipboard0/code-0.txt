@@ -1,0 +1,37 @@
+defmodule Route do
+  def height(nil), do: 0
+  def height(node) do
+    # Compute the height of each subtree 
+    lh = height(node.left) 
+    rh = height(node.right) 
+    # Use the larger one 
+    max(lh, rh) + 1
+  end
+
+  def longest_route(nil), do: 0
+  def longest_route(root) do
+    l_height = height(root.left)
+    r_height = height(root.right)
+    l_path = longest_route(root.left)
+    r_path = longest_route(root.right)
+    
+    max(l_height + r_height, max(l_path, r_path))
+  end
+end
+
+# Driver code
+defmodule Main do
+  def main do
+    IO.puts "-----------------------------"
+    IO.puts "PROGRAM OUTPUT:"
+    
+    root = TreeNode.init("a")
+    root = %TreeNode{root | left: TreeNode.init("b")}
+    root = %TreeNode{root | right: TreeNode.init("c")}
+    root = %TreeNode{root | left: %TreeNode{root.left | left: TreeNode.init("d")}}
+    root = %TreeNode{root | right: %TreeNode{root.right | left: TreeNode.init("e")}}
+    root = %TreeNode{root | right: %TreeNode{root.right | right: TreeNode.init("f")}}
+
+    IO.puts "The longest route will pass through #{Route.longest_route(root)} checkpoints"
+  end
+end

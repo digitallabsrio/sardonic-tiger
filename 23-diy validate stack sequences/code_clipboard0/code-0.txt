@@ -1,0 +1,5 @@
+defmodule Solution do
+  def validate_stack_sequences(_pushed, _popped) do
+    # write your code here
+  end
+end

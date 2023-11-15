@@ -1,0 +1,5 @@
+defmodule Solution do
+  def search_rotated(_arr, _key) do
+    # write your code here
+  end
+end

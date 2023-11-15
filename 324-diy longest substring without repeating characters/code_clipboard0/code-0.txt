@@ -1,0 +1,6 @@
+defmodule Solution do
+  def find_longest_substring(str) do
+    # write your code here
+    {str, "-1"}
+  end
+end

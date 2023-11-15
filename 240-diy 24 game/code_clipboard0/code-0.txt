@@ -1,0 +1,5 @@
+defmodule Solution do
+  def game24(_cards) do    
+    # Write your code here
+  end
+end

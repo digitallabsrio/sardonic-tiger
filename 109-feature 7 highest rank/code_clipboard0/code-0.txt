@@ -1,0 +1,33 @@
+defmodule Rank do
+  def kth_highest_rank(ranks, k) do
+    min_heap = []
+
+    # Put first k ranks in the min heap
+    min_heap = 
+      0..k-1
+      |> Enum.reduce(min_heap, fn(i, min_heap) -> 
+        min_heap 
+        |> Enum.into(Heap.new()) 
+        |> Heap.push(ranks[i])
+      end)
+
+    # Go through the remaining ranks of the list, if the rank from the list is greater than the
+    # top(smallest) rank of the heap, remove the top rank from heap and add the rank from array
+    k..Arrays.size(ranks)-1
+    |> Enum.reduce(min_heap, fn(i, min_heap) ->
+      cond do
+        ranks[i] > Heap.root(min_heap) -> min_heap |> Heap.pop |> Heap.push(ranks[i])
+        true -> min_heap
+      end
+    end)
+    |> Heap.root # The root of the heap has the Kth largest rank
+  end
+end
+
+# Driver code
+IO.puts "-----------------------------"
+IO.puts "PROGRAM OUTPUT:"
+
+driver_ranks = Arrays.new([1, 5, 12, 2, 11, 9, 7, 30, 20])
+k = 3 # Supplied by a hidden API
+IO.puts "Driver with the rank #{Rank.kth_highest_rank(driver_ranks, k)} is selected!"
